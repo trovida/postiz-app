@@ -649,6 +649,7 @@ export class PostsRepository {
       ? (
           await this._post.model.post.findFirst({
             where: {
+              organizationId: orgId, // S14 (T1-7): don't read another org's group
               group: body.group,
               deletedAt: null,
               parentPostId: null,
@@ -663,6 +664,11 @@ export class PostsRepository {
     if (body.group && !keepGroup) {
       await this._post.model.post.updateMany({
         where: {
+          // S14 (T1-7): scope by organizationId. `body.group` is caller-supplied,
+          // so without this an update in org A soft-deletes org B's posts that
+          // share the group value. deletePost() already scopes correctly — this
+          // was an omission, not design.
+          organizationId: orgId,
           group: body.group,
           deletedAt: null,
         },
@@ -678,6 +684,7 @@ export class PostsRepository {
     if (body.group && keepGroup) {
       await this._post.model.post.updateMany({
         where: {
+          organizationId: orgId, // S14 (T1-7) — see above
           group: body.group,
           deletedAt: null,
           id: {

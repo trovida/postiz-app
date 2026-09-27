@@ -7,7 +7,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     bash \
     nginx \
+    openssl \
+    ca-certificates \
 && rm -rf /var/lib/apt/lists/*
+# openssl + ca-certificates: Prisma's query engine requires libssl at runtime
+# (T1-1/S18 — the migrate-deploy init container and the app's Prisma client both
+# need it; a slim base without it degrades the engine). See POSTIZ_TIER1_RUNBOOK.md.
 
 RUN addgroup --system www \
  && adduser --system --ingroup www --home /www --shell /usr/sbin/nologin www \

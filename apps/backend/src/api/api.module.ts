@@ -3,6 +3,7 @@ import { AuthController } from '@gitroom/backend/api/routes/auth.controller';
 import { AuthService } from '@gitroom/backend/services/auth/auth.service';
 import { UsersController } from '@gitroom/backend/api/routes/users.controller';
 import { AuthMiddleware } from '@gitroom/backend/services/auth/auth.middleware';
+import { EnterpriseAuthMiddleware } from '@gitroom/backend/services/auth/enterprise.auth.middleware';
 import { StripeService } from '@gitroom/nestjs-libraries/services/stripe.service';
 import { PaymentController } from '@gitroom/backend/api/routes/payment.controller';
 import { PaymentService } from '@gitroom/nestjs-libraries/services/payment/payment.service';
@@ -111,6 +112,7 @@ const authenticatedController = [
     OpenaiService,
     ExtractContentService,
     AuthMiddleware,
+    EnterpriseAuthMiddleware,
     UploadWidgetAuthMiddleware,
     PoliciesGuard,
     PermissionsService,
@@ -133,6 +135,10 @@ const authenticatedController = [
 export class ApiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware).forRoutes(...authenticatedController);
+    // S13 (Trovida T1-3): gate the org+apiKey mint routes behind a dedicated
+    // server-to-server credential. Upstream left EnterpriseController off every
+    // middleware, reachable by anyone who could hit the port.
+    consumer.apply(EnterpriseAuthMiddleware).forRoutes(EnterpriseController);
     consumer.apply(UploadWidgetAuthMiddleware).forRoutes(MediaWidgetController);
     consumer
       .apply(ClippingWidgetAuthMiddleware)

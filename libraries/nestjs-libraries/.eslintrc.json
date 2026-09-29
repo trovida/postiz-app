@@ -13,6 +13,30 @@
     {
       "files": ["*.js", "*.jsx"],
       "rules": {}
+    },
+    {
+      "//": "make.is + make.secure.id are bundled into the Temporal WORKFLOW sandbox, where Node's `crypto` is a disallowed module — importing it crash-loops the orchestrator worker and silently freezes ALL publishing (posts stick in QUEUE). They must stay isomorphic (Web Crypto `globalThis.crypto.getRandomValues`). See POSTIZ_TIER1_RUNBOOK.md and scripts/check-workflow-safe-crypto.mjs.",
+      "files": [
+        "src/services/make.is.ts",
+        "src/services/make.secure.id.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "crypto",
+                "message": "make.is/make.secure.id reach the Temporal workflow sandbox — use isomorphic Web Crypto (globalThis.crypto.getRandomValues), never Node 'crypto'. A Node crypto import here freezes all publishing."
+              },
+              {
+                "name": "node:crypto",
+                "message": "make.is/make.secure.id reach the Temporal workflow sandbox — use isomorphic Web Crypto (globalThis.crypto.getRandomValues), never Node 'node:crypto'. A Node crypto import here freezes all publishing."
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

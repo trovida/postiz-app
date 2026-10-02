@@ -374,7 +374,7 @@ export class AgentGraphService {
     return { date: await this._postsService.findFreeDateTime(state.orgId) };
   }
 
-  start(orgId: string, body: GeneratorDto) {
+  async *start(orgId: string, body: GeneratorDto) {
     const state = AgentGraphService.state();
     const workflow = state
       .addNode('agent', this.startCall.bind(this))
@@ -408,18 +408,35 @@ export class AgentGraphService {
 
     const app = workflow.compile();
 
-    return app.streamEvents(
-      {
-        messages: [new HumanMessage(body.research)],
-        isPicture: body.isPicture,
-        format: body.format,
-        tone: body.tone,
-        orgId,
-      },
-      {
-        streamMode: 'values',
-        version: 'v2',
+    const input = {
+      messages: [new HumanMessage(body.research)],
+      isPicture: body.isPicture,
+      format: body.format,
+      tone: body.tone,
+      orgId,
+    };
+
+    // Drive the graph in `updates` mode — one event PER NODE completion, not per
+    // token. The previous `streamEvents(v2)` streamed every model token, which on
+    // a reasoning model (DeepSeek) re-serialises the growing reasoning on each
+    // delta (O(n^2), multi-MB, 90s+ and cut mid-stream). In `updates` mode each
+    // node's model runs via a single `.invoke()` (~10s, non-streamed) and emits
+    // one compact event. We re-shape each update into the `{ name, data: { output } }`
+    // envelope the frontend consumes: it switches progress labels on `name`, and
+    // when the stream ends it reads the final `data.output` (the accumulated
+    // { hook, content, ... } state).
+    let accumulated: Record<string, any> = {};
+    for await (const chunk of await app.stream(input, {
+      streamMode: 'updates',
+    })) {
+      for (const [nodeName, update] of Object.entries(
+        chunk as Record<string, any>
+      )) {
+        if (update && typeof update === 'object') {
+          accumulated = { ...accumulated, ...update };
+        }
+        yield { name: nodeName, data: { output: accumulated } };
       }
-    );
+    }
   }
 }

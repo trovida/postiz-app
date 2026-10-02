@@ -5,7 +5,11 @@ import {
   ToolMessage,
 } from '@langchain/core/messages';
 import { END, START, StateGraph } from '@langchain/langgraph';
-import { ChatOpenAI, DallEAPIWrapper } from '@langchain/openai';
+import {
+  getLangchainChat,
+  getLangchainImage,
+  getLangchainStructured,
+} from '@gitroom/nestjs-libraries/openai/ai.provider';
 import { TavilySearch } from '@langchain/tavily';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -22,16 +26,9 @@ const tools = !process.env.TAVILY_API_KEY
   : [new TavilySearch({ maxResults: 3 })];
 const toolNode = new ToolNode(tools);
 
-const model = new ChatOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'gpt-4.1',
-  temperature: 0.7,
-});
+const model = getLangchainChat('gpt-4.1', { temperature: 0.7 });
 
-const dalle = new DallEAPIWrapper({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'chatgpt-image-latest',
-});
+const dalle = getLangchainImage();
 
 interface WorkflowChannelsState {
   messages: BaseMessage[];
@@ -157,7 +154,7 @@ export class AgentGraphService {
 
   async findCategories(state: WorkflowChannelsState) {
     const allCategories = await this._postsService.findAllExistingCategories();
-    const structuredOutput = model.withStructuredOutput(category);
+    const structuredOutput = getLangchainStructured(model, category, 'category');
     const { category: outputCategory } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets a text that will be later summarized into a social media post
@@ -184,7 +181,7 @@ export class AgentGraphService {
       return { topic: null };
     }
 
-    const structuredOutput = model.withStructuredOutput(topic);
+    const structuredOutput = getLangchainStructured(model, topic, 'topic');
     const { topic: outputTopic } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets a text that will be later summarized into a social media post
@@ -212,7 +209,7 @@ export class AgentGraphService {
   }
 
   async generateHook(state: WorkflowChannelsState) {
-    const structuredOutput = model.withStructuredOutput(hook);
+    const structuredOutput = getLangchainStructured(model, hook, 'hook');
     const { hook: outputHook } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets content for a social media post, and generate only the hook.
@@ -254,8 +251,10 @@ export class AgentGraphService {
   }
 
   async generateContent(state: WorkflowChannelsState) {
-    const structuredOutput = model.withStructuredOutput(
-      contentZod(!!state.isPicture, state.format)
+    const structuredOutput = getLangchainStructured(
+      model,
+      contentZod(!!state.isPicture, state.format),
+      'content'
     );
     const { content: outputContent } = await ChatPromptTemplate.fromTemplate(
       `

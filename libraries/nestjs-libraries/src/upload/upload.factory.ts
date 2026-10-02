@@ -9,6 +9,7 @@ import {
   IngestJob,
   IngestResult,
 } from './clipping.processor.interface';
+import { aiTextEnabled } from '@gitroom/nestjs-libraries/openai/ai.provider';
 
 export class UploadFactory {
   static createStorage(): IUploadProvider {
@@ -61,7 +62,7 @@ export class UploadFactory {
       !!process.env.RUNPOD_CLIPPER_ENDPOINT_ID &&
       !!process.env.DEEPGRAM_API_KEY &&
       // the clips are picked by the model
-      !!process.env.OPENAI_API_KEY
+      aiTextEnabled()
     );
   }
 

@@ -1,4 +1,5 @@
 import { OpenaiService } from '@gitroom/nestjs-libraries/openai/openai.service';
+import { aiTextEnabled } from '@gitroom/nestjs-libraries/openai/ai.provider';
 import {
   ExposeVideoFunction,
   URL,
@@ -65,7 +66,7 @@ class ImagesSlidesParams {
     !!process.env.ELEVENSLABS_API_KEY &&
     !!process.env.TRANSLOADIT_AUTH &&
     !!process.env.TRANSLOADIT_SECRET &&
-    !!process.env.OPENAI_API_KEY &&
+    aiTextEnabled() &&
     !!process.env.FAL_KEY,
 })
 export class ImagesSlides extends VideoAbstract<ImagesSlidesParams> {

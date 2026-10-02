@@ -10,9 +10,12 @@ import {
 } from '@nestjs/common';
 import {
   CopilotRuntime,
-  OpenAIAdapter,
   copilotRuntimeNodeHttpEndpoint,
 } from '@copilotkit/runtime';
+import {
+  aiTextEnabled,
+  getCopilotAdapter,
+} from '@gitroom/nestjs-libraries/openai/ai.provider';
 import { GetOrgFromRequest } from '@gitroom/nestjs-libraries/user/org.from.request';
 import { Organization } from '@prisma/client';
 import { SubscriptionService } from '@gitroom/nestjs-libraries/database/prisma/subscriptions/subscription.service';
@@ -47,11 +50,10 @@ export class CopilotController {
   ) {}
   @Post('/chat')
   chatAgent(@Req() req: Request, @Res() res: Response) {
-    if (
-      process.env.OPENAI_API_KEY === undefined ||
-      process.env.OPENAI_API_KEY === ''
-    ) {
-      Logger.warn('OpenAI API key not set, chat functionality will not work');
+    if (!aiTextEnabled()) {
+      Logger.warn(
+        'AI provider not configured, chat functionality will not work'
+      );
       return;
     }
 
@@ -59,9 +61,7 @@ export class CopilotController {
       endpoint: '/copilot/chat',
       cors: copilotCors(),
       runtime: new CopilotRuntime(),
-      serviceAdapter: new OpenAIAdapter({
-        model: 'gpt-4.1',
-      }),
+      serviceAdapter: getCopilotAdapter(),
     });
 
     return copilotRuntimeHandler(req, res);
@@ -74,11 +74,10 @@ export class CopilotController {
     @Res() res: Response,
     @GetOrgFromRequest() organization: Organization
   ) {
-    if (
-      process.env.OPENAI_API_KEY === undefined ||
-      process.env.OPENAI_API_KEY === ''
-    ) {
-      Logger.warn('OpenAI API key not set, chat functionality will not work');
+    if (!aiTextEnabled()) {
+      Logger.warn(
+        'AI provider not configured, chat functionality will not work'
+      );
       return;
     }
     const mastra = await this._mastraService.mastra();
@@ -105,9 +104,7 @@ export class CopilotController {
       endpoint: '/copilot/agent',
       cors: copilotCors(),
       runtime,
-      serviceAdapter: new OpenAIAdapter({
-        model: 'gpt-4.1',
-      }),
+      serviceAdapter: getCopilotAdapter(),
     });
 
     return copilotRuntimeHandler(req, res);

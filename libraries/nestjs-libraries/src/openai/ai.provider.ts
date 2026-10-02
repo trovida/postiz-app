@@ -93,15 +93,6 @@ export const getLangchainChat = (
   new ChatOpenAI({
     apiKey: TEXT_KEY || 'sk-noop',
     model: textModel(fallbackModel),
-    // Non-streaming on purpose. These models feed the LangGraph graphs that the
-    // generator/autopost run under `.streamEvents()`. With a reasoning model,
-    // token-by-token streaming re-serialises the (large, growing) reasoning on
-    // every delta — an O(n^2) blowup that turns a ~10s call into 90s+ and a
-    // multi-MB stream that gets cut mid-generation. A single non-streamed call
-    // returns the whole response at once; the graph still emits node-level
-    // progress events, so the client UI is unaffected. (The Mastra agent uses a
-    // different model path — getAgentModel — and is not touched by this.)
-    streaming: false,
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(TEXT_BASE ? { configuration: { baseURL: TEXT_BASE } } : {}),
   });

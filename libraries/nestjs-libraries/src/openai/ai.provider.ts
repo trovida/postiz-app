@@ -93,6 +93,14 @@ export const getLangchainChat = (
   new ChatOpenAI({
     apiKey: TEXT_KEY || 'sk-noop',
     model: textModel(fallbackModel),
+    // Non-streaming: ChatOpenAI.invoke() with streaming:true still streams
+    // internally (token-by-token aggregation) — on a reasoning model that
+    // re-serialises the growing reasoning per token (O(n^2), 90s+). streaming:false
+    // uses the plain completions endpoint (~10s, verified). These models run under
+    // the generator/autopost graphs, which surface progress via app.stream
+    // (streamMode:'updates') / app.invoke — node-level, NOT token-level — so no
+    // token stream is needed. (The Mastra agent uses getAgentModel, a separate path.)
+    streaming: false,
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
     ...(TEXT_BASE ? { configuration: { baseURL: TEXT_BASE } } : {}),
   });

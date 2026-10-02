@@ -4,9 +4,12 @@ import { z } from 'zod';
 import {
   getTextClient,
   getImageClient,
+  getVisionClient,
   textModel,
   imageModel,
+  visionModel,
   aiImageEnabled,
+  aiVisionEnabled,
   parseStructured,
 } from '@gitroom/nestjs-libraries/openai/ai.provider';
 
@@ -74,6 +77,50 @@ Clips must not overlap. Write the title and the post in this language, whatever 
     );
 
     return (result || { clips: [] }).clips;
+  }
+
+  // Image UNDERSTANDING: look at an uploaded photo and write a ready-to-post
+  // caption about what it actually shows. `image` is a base64 data URI (the
+  // caller inlines the bytes so the vision host never has to fetch our URL).
+  async describeImageToCaption(
+    image: string,
+    opts: { tone?: string; instructions?: string; context?: string } = {}
+  ): Promise<string> {
+    if (!aiVisionEnabled()) {
+      throw new Error(
+        'AI vision is not configured (set AI_VISION_MODEL — and AI_VISION_API_KEY / AI_VISION_BASE_URL if different from the text provider — to a vision-capable OpenAI-compatible model).'
+      );
+    }
+    const tone = opts.tone || 'casual';
+    const instruction =
+      `Write the caption in a ${tone} tone.` +
+      (opts.instructions ? ` ${opts.instructions}` : '') +
+      (opts.context
+        ? ` Match the voice of this existing draft: """${opts.context}"""`
+        : '');
+
+    const response = await getVisionClient().chat.completions.create(
+      {
+        model: visionModel(),
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a social media copywriter. Look at the image and write ONE ready-to-post caption about what it actually shows. Be factual — describe only what is clearly visible, and never invent brand names, prices, readable text, or details you cannot see. Reply with the caption only: no preamble, no surrounding quotes, and no hashtags unless asked.',
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: instruction },
+              { type: 'image_url', image_url: { url: image } },
+            ],
+          },
+        ],
+      },
+      { timeout: 60_000, maxRetries: 1 }
+    );
+
+    return (response.choices[0]?.message?.content || '').trim();
   }
 
   async generateImage(prompt: string, isVertical = false) {

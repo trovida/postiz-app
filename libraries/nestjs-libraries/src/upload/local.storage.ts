@@ -1,5 +1,11 @@
 import { IUploadProvider, UploadedStream } from './upload.interface';
-import { createWriteStream, mkdirSync, unlink, writeFileSync } from 'fs';
+import {
+  createWriteStream,
+  mkdirSync,
+  readFileSync,
+  unlink,
+  writeFileSync,
+} from 'fs';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { isSafePublicHttpsUrl } from '@gitroom/nestjs-libraries/dtos/webhooks/webhook.url.validator';
@@ -135,6 +141,15 @@ export class LocalStorage implements IUploadProvider {
       console.error('Error streaming file to Local Storage:', err);
       throw err;
     }
+  }
+
+  // Accepts either the public URL or the filesystem path
+  async readBytes(filePath: string): Promise<Buffer> {
+    const publicPrefix = process.env.FRONTEND_URL + '/uploads';
+    const localPath = filePath.startsWith(publicPrefix)
+      ? this.uploadDirectory + filePath.slice(publicPrefix.length)
+      : filePath;
+    return readFileSync(localPath);
   }
 
   // Accepts either the public URL or the filesystem path

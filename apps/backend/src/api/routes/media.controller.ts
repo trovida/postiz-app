@@ -23,6 +23,7 @@ import { streamUploadOptions } from '@gitroom/nestjs-libraries/upload/multer.str
 import { SubscriptionService } from '@gitroom/nestjs-libraries/database/prisma/subscriptions/subscription.service';
 import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
 import { SaveMediaInformationDto } from '@gitroom/nestjs-libraries/dtos/media/save.media.information.dto';
+import { CaptionMediaDto } from '@gitroom/nestjs-libraries/dtos/media/caption.media.dto';
 import { VideoDto } from '@gitroom/nestjs-libraries/dtos/videos/video.dto';
 import { VideoFunctionDto } from '@gitroom/nestjs-libraries/dtos/videos/video.function.dto';
 
@@ -82,6 +83,15 @@ export class MediaController {
     const file = await this.storage.uploadSimple(image.output);
 
     return this._mediaService.saveFile(org.id, file.split('/').pop(), file);
+  }
+
+  // Must stay ABOVE the `/:endpoint` catch-all below, or it is swallowed.
+  @Post('/caption')
+  async captionFromMedia(
+    @GetOrgFromRequest() org: Organization,
+    @Body() body: CaptionMediaDto
+  ) {
+    return this._mediaService.captionFromMedia(org.id, body);
   }
 
   @Post('/upload-server')

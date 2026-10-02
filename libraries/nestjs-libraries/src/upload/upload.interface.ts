@@ -25,6 +25,11 @@ export interface IUploadProvider {
   signUploadUrl?(fileName: string, contentType: string): Promise<string>;
   // Public URL of a key the media processor wrote through a presigned upload
   publicUrl?(fileName: string): string;
+  // Read the raw bytes of a stored object. Accepts the same identifier as
+  // removeFile (the public URL or the provider's key/path); used to feed an
+  // uploaded image to a vision model without the provider having to fetch its
+  // own (possibly private/localhost) public URL over the network.
+  readBytes?(filePath: string): Promise<Buffer>;
   // Small text files (a transcript) exchanged with the media processor under a
   // key both sides know, where uploadSimple would pick a random one
   readFile?(fileName: string): Promise<string>;

@@ -5,6 +5,7 @@ import { generationError } from '@gitroom/nestjs-libraries/openai/generation.err
 import { SubscriptionService } from '@gitroom/nestjs-libraries/database/prisma/subscriptions/subscription.service';
 import { Organization } from '@prisma/client';
 import { SaveMediaInformationDto } from '@gitroom/nestjs-libraries/dtos/media/save.media.information.dto';
+import { CaptionMediaDto } from '@gitroom/nestjs-libraries/dtos/media/caption.media.dto';
 import { VideoManager } from '@gitroom/nestjs-libraries/videos/video.manager';
 import { VideoDto } from '@gitroom/nestjs-libraries/dtos/videos/video.dto';
 import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
@@ -100,6 +101,54 @@ export class MediaService {
 
   getMediaById(id: string) {
     return this._mediaRepository.getMediaById(id);
+  }
+
+  // Write a caption for one of the org's own uploaded photos by passing its
+  // bytes to a vision model. Ownership is enforced by the org-scoped lookup, and
+  // we read the bytes ourselves + inline them as a data URI — the vision host
+  // never receives a caller-supplied URL (no SSRF surface).
+  async captionFromMedia(orgId: string, body: CaptionMediaDto) {
+    const media = await this._mediaRepository.getMediaByIdForOrg(
+      orgId,
+      body.mediaId
+    );
+    if (!media) {
+      throw new BadRequestException('Image not found');
+    }
+    if (!this.storage.readBytes) {
+      throw new BadRequestException(
+        'This storage provider does not support reading media for captioning'
+      );
+    }
+
+    const bytes = await this.storage.readBytes(media.path);
+    if (bytes.length > 15 * 1024 * 1024) {
+      throw new BadRequestException('Image is too large to caption (max 15MB)');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { fileTypeFromBuffer } = require('file-type');
+    const detected = await fileTypeFromBuffer(bytes);
+    const allowed = new Set([
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ]);
+    if (!detected || !allowed.has(detected.mime)) {
+      throw new BadRequestException(
+        'Only JPEG, PNG, WebP or GIF images can be captioned'
+      );
+    }
+
+    const dataUri = `data:${detected.mime};base64,${bytes.toString('base64')}`;
+    const caption = await this._openAi.describeImageToCaption(dataUri, {
+      tone: body.tone,
+      instructions: body.instructions,
+      context: body.context,
+    });
+
+    return { caption };
   }
 
   async generateImage(

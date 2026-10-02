@@ -46,11 +46,32 @@ const IMAGE_KEY =
 const IMAGE_BASE = env.AI_IMAGE_BASE_URL || undefined;
 const IMAGE_MODEL = env.AI_IMAGE_MODEL || 'chatgpt-image-latest';
 
+// VISION slot — image UNDERSTANDING (image -> text), distinct from the IMAGE
+// slot's text -> image generation. Key/host fall back to the TEXT provider, but
+// the MODEL must be chosen deliberately: on plain OpenAI the text model (or
+// gpt-4o-mini) is multimodal, but a custom text host (DeepSeek, …) must set
+// AI_VISION_MODEL explicitly — we never assume a text model can see (e.g.
+// deepseek-flash can, deepseek-v4-pro cannot).
+const VISION_KEY = env.AI_VISION_API_KEY || TEXT_KEY;
+const VISION_BASE =
+  env.AI_VISION_BASE_URL || (env.AI_VISION_API_KEY ? undefined : TEXT_BASE);
+const VISION_MODEL =
+  env.AI_VISION_MODEL || (PLAIN_OPENAI ? env.AI_TEXT_MODEL || 'gpt-4o-mini' : '');
+
 /** Is text/agent generation configured? */
 export const aiTextEnabled = () => !!TEXT_KEY;
 /** Is image generation configured? (DeepSeek has no image model, so this is
  *  off unless AI_IMAGE_* is set — or we're on plain OpenAI.) */
 export const aiImageEnabled = () => !!IMAGE_KEY;
+
+/** Is image UNDERSTANDING (vision) configured? Needs both a key and a model;
+ *  a non-OpenAI text host must opt in via AI_VISION_MODEL. */
+export const aiVisionEnabled = () => !!VISION_KEY && !!VISION_MODEL;
+/** The vision model id. */
+export const visionModel = () => VISION_MODEL;
+/** Official `openai` SDK client for VISION (defaults to the text provider). */
+export const getVisionClient = () =>
+  new OpenAI({ apiKey: VISION_KEY || 'sk-noop', baseURL: VISION_BASE });
 
 /**
  * Does the configured text provider support OpenAI structured outputs

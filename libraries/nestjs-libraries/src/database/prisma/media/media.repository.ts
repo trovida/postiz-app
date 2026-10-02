@@ -84,6 +84,24 @@ export class MediaRepository {
     });
   }
 
+  // Ownership-scoped lookup: only returns the row if it belongs to this org
+  // and is not soft-deleted. Used by features that act on a user's own media.
+  getMediaByIdForOrg(org: string, id: string) {
+    return this._media.model.media.findFirst({
+      where: {
+        id,
+        organizationId: org,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        path: true,
+        status: true,
+      },
+    });
+  }
+
   deleteMedia(org: string, id: string) {
     return this._media.model.media.update({
       where: {

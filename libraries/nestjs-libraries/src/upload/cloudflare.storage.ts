@@ -232,6 +232,15 @@ class CloudflareStorage implements IUploadProvider {
     return Body!.transformToString();
   }
 
+  // Accepts either the public URL or the bare key (like removeFile)
+  async readBytes(filePath: string): Promise<Buffer> {
+    const fileName = filePath.split('/').pop();
+    const { Body } = await this._client.send(
+      new GetObjectCommand({ Bucket: this._bucketName, Key: fileName })
+    );
+    return Buffer.from(await Body!.transformToByteArray());
+  }
+
   async writeFile(fileName: string, body: string, contentType: string) {
     await this._client.send(
       new PutObjectCommand({

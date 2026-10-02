@@ -1322,9 +1322,14 @@ export class PostsService {
       orgId,
       integrationId
     );
+    // No posting schedule configured (e.g. an org with no connected channel yet)
+    // yields an empty time set, which would make findFreeDateTimeRecursive loop
+    // forever (empty times => empty counts => recurse to the next day, endlessly).
+    // Fall back to a sensible default slot so it always terminates.
+    const safeTimes = findTimes.length ? findTimes : [540]; // 540 = 09:00 UTC
     return this.findFreeDateTimeRecursive(
       orgId,
-      findTimes,
+      safeTimes,
       dayjs.utc().startOf('day')
     );
   }
@@ -1341,7 +1346,8 @@ export class PostsService {
   private async findFreeDateTimeRecursive(
     orgId: string,
     times: number[],
-    date: dayjs.Dayjs
+    date: dayjs.Dayjs,
+    daysChecked = 0
   ): Promise<string> {
     const list = await this._postRepository.getPostsCountsByDates(
       orgId,
@@ -1350,7 +1356,20 @@ export class PostsService {
     );
 
     if (!list.length) {
-      return this.findFreeDateTimeRecursive(orgId, times, date.add(1, 'day'));
+      // Safety cap: never recurse unbounded. If no free slot is found within a
+      // year, fall back to the first time slot on the current candidate day.
+      if (daysChecked >= 365) {
+        return date
+          .clone()
+          .add(times[0] ?? 540, 'minutes')
+          .format('YYYY-MM-DDTHH:mm:00');
+      }
+      return this.findFreeDateTimeRecursive(
+        orgId,
+        times,
+        date.add(1, 'day'),
+        daysChecked + 1
+      );
     }
 
     const num = list.reduce<null | number>((prev, curr) => {

@@ -102,6 +102,24 @@ export class MediaRepository {
     });
   }
 
+  // Same, keyed by the stored public path — for callers that only have the URL
+  // (e.g. the chat agent reading an image URL from the message text).
+  getMediaByPathForOrg(org: string, path: string) {
+    return this._media.model.media.findFirst({
+      where: {
+        path,
+        organizationId: org,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        path: true,
+        status: true,
+      },
+    });
+  }
+
   deleteMedia(org: string, id: string) {
     return this._media.model.media.update({
       where: {

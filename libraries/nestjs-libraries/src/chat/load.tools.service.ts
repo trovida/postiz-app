@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Agent } from '@mastra/core/agent';
-import { getAgentModel } from '@gitroom/nestjs-libraries/openai/ai.provider';
+import {
+  getAgentModel,
+  aiVisionEnabled,
+} from '@gitroom/nestjs-libraries/openai/ai.provider';
 import { Memory } from '@mastra/memory';
 import { pStore } from '@gitroom/nestjs-libraries/chat/mastra.store';
 import { array, object, string } from 'zod';
@@ -66,6 +69,11 @@ export class LoadToolsService {
         - Generate pictures for posts
         - Generate videos for posts
         - Generate text for posts
+${
+  aiVisionEnabled()
+    ? `        - Look at a photo the user uploaded and write a caption about what's actually in it (describeImageTool). When the user's message contains an uploaded image (its URL is inside a "[--Media--]Image: <url>[--Media--]" marker) and they ask for a caption for it or ask what's in it, call describeImageTool with that exact URL first, then write the caption yourself in the right voice and platform format.`
+    : ''
+}
         - Show global analytics about socials
         - List integrations (channels)
         - List groups (customers) and filter the channels by a group

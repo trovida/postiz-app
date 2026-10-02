@@ -107,25 +107,18 @@ export class MediaService {
   // bytes to a vision model. Ownership is enforced by the org-scoped lookup, and
   // we read the bytes ourselves + inline them as a data URI — the vision host
   // never receives a caller-supplied URL (no SSRF surface).
-  async captionFromMedia(orgId: string, body: CaptionMediaDto) {
-    const media = await this._mediaRepository.getMediaByIdForOrg(
-      orgId,
-      body.mediaId
-    );
-    if (!media) {
-      throw new BadRequestException('Image not found');
-    }
+  // Read one of the org's own stored images and return it as a base64 data URI
+  // — so the vision host never fetches our (possibly private/localhost) URL.
+  private async loadMediaAsDataUri(path: string): Promise<string> {
     if (!this.storage.readBytes) {
       throw new BadRequestException(
-        'This storage provider does not support reading media for captioning'
+        'This storage provider does not support reading media'
       );
     }
-
-    const bytes = await this.storage.readBytes(media.path);
+    const bytes = await this.storage.readBytes(path);
     if (bytes.length > 15 * 1024 * 1024) {
-      throw new BadRequestException('Image is too large to caption (max 15MB)');
+      throw new BadRequestException('Image is too large (max 15MB)');
     }
-
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { fileTypeFromBuffer } = require('file-type');
     const detected = await fileTypeFromBuffer(bytes);
@@ -137,18 +130,51 @@ export class MediaService {
     ]);
     if (!detected || !allowed.has(detected.mime)) {
       throw new BadRequestException(
-        'Only JPEG, PNG, WebP or GIF images can be captioned'
+        'Only JPEG, PNG, WebP or GIF images are supported'
       );
     }
+    return `data:${detected.mime};base64,${bytes.toString('base64')}`;
+  }
 
-    const dataUri = `data:${detected.mime};base64,${bytes.toString('base64')}`;
+  async captionFromMedia(orgId: string, body: CaptionMediaDto) {
+    const media = await this._mediaRepository.getMediaByIdForOrg(
+      orgId,
+      body.mediaId
+    );
+    if (!media) {
+      throw new BadRequestException('Image not found');
+    }
+    const dataUri = await this.loadMediaAsDataUri(media.path);
     const caption = await this._openAi.describeImageToCaption(dataUri, {
       tone: body.tone,
       instructions: body.instructions,
       context: body.context,
     });
-
     return { caption };
+  }
+
+  // For the chat agent: resolve a storage URL to the org's OWN media and return
+  // a factual description. Only this workspace's storage URLs are accepted
+  // (SSRF guard) and the media must belong to the org (ownership guard).
+  async describeImageUrl(orgId: string, imageUrl: string, question?: string) {
+    const prefixes = [
+      (process.env.FRONTEND_URL || '') + '/uploads',
+      process.env.CLOUDFLARE_BUCKET_URL || '',
+    ].filter((p) => p && p !== '/uploads');
+    if (!prefixes.some((p) => imageUrl.startsWith(p))) {
+      throw new BadRequestException(
+        'Only images uploaded to this workspace can be described'
+      );
+    }
+    const media = await this._mediaRepository.getMediaByPathForOrg(
+      orgId,
+      imageUrl
+    );
+    if (!media) {
+      throw new BadRequestException('Image not found in your media');
+    }
+    const dataUri = await this.loadMediaAsDataUri(media.path);
+    return this._openAi.describeImage(dataUri, question);
   }
 
   async generateImage(

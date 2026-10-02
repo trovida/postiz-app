@@ -9,6 +9,7 @@ import { ClippingTool } from '@gitroom/nestjs-libraries/chat/tools/clipping.tool
 import { ClippingStatusTool } from '@gitroom/nestjs-libraries/chat/tools/clipping.status.tool';
 import { ClippingWidgetTicketTool } from '@gitroom/nestjs-libraries/chat/tools/clipping.widget.ticket.tool';
 import { GenerateImageTool } from '@gitroom/nestjs-libraries/chat/tools/generate.image.tool';
+import { DescribeImageTool } from '@gitroom/nestjs-libraries/chat/tools/describe.image.tool';
 import { IntegrationListTool } from '@gitroom/nestjs-libraries/chat/tools/integration.list.tool';
 import { GroupListTool } from '@gitroom/nestjs-libraries/chat/tools/group.list.tool';
 import { UploadFromUrlTool } from '@gitroom/nestjs-libraries/chat/tools/upload.from.url.tool';
@@ -34,6 +35,7 @@ export const toolList = [
   ClippingStatusTool,
   ClippingWidgetTicketTool,
   GenerateImageTool,
+  DescribeImageTool,
   UploadFromUrlTool,
   UploadWidgetTool,
   UploadWidgetTicketTool,

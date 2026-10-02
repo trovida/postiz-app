@@ -79,6 +79,38 @@ Clips must not overlap. Write the title and the post in this language, whatever 
     return (result || { clips: [] }).clips;
   }
 
+  // Image UNDERSTANDING (factual): return a plain description of what is in an
+  // image, so a caller (e.g. the chat agent) can then write copy about it. For
+  // a ready-to-post caption in one call, use describeImageToCaption instead.
+  async describeImage(image: string, question?: string): Promise<string> {
+    if (!aiVisionEnabled()) {
+      throw new Error(
+        'AI vision is not configured (set AI_VISION_MODEL — and AI_VISION_API_KEY / AI_VISION_BASE_URL if different from the text provider — to a vision-capable OpenAI-compatible model).'
+      );
+    }
+    const response = await getVisionClient().chat.completions.create(
+      {
+        model: visionModel(),
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text:
+                  question ||
+                  'Describe this photo in detail so a copywriter can caption it: the main subjects, the setting, the mood, the colours, and any clearly readable text or logos. Be factual and concrete — describe only what is visible, and never invent details. 3-5 sentences.',
+              },
+              { type: 'image_url', image_url: { url: image } },
+            ],
+          },
+        ],
+      },
+      { timeout: 60_000, maxRetries: 1 }
+    );
+    return (response.choices[0]?.message?.content || '').trim();
+  }
+
   // Image UNDERSTANDING: look at an uploaded photo and write a ready-to-post
   // caption about what it actually shows. `image` is a base64 data URI (the
   // caller inlines the bytes so the vision host never has to fetch our URL).

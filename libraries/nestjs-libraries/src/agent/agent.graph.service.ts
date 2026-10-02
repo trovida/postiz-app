@@ -264,7 +264,7 @@ export class AgentGraphService {
         - Use ${state.tone === 'personal' ? '1st' : '3rd'} person mode
         - ${
           state.format === 'one_short' || state.format === 'thread_short'
-            ? 'Post should be maximum 200 chars to fit twitter'
+            ? 'Keep the post short and concise — roughly 1-2 sentences'
             : 'Post should be long'
         }
         - ${

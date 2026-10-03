@@ -6,6 +6,7 @@ import {
 } from '@langchain/core/messages';
 import { END, START, StateGraph } from '@langchain/langgraph';
 import {
+  aiVisionEnabled,
   getLangchainChat,
   getLangchainImage,
   getLangchainStructured,
@@ -49,6 +50,12 @@ interface WorkflowChannelsState {
   }[];
   isPicture?: boolean;
   popularPosts?: { content: string; hook: string }[];
+  // Phase 3 (vision): photos the user attached to the generator (input),
+  // the resolved media rows to attach to the output, and the concatenated
+  // factual descriptions threaded into research/hook/content.
+  pictures?: { id: string }[];
+  userMedia?: { id: string; path: string }[];
+  visionContext?: string;
 }
 
 const category = z.object({
@@ -126,8 +133,49 @@ export class AgentGraphService {
         popularPosts: null,
         topic: null,
         isPicture: null,
+        pictures: null,
+        userMedia: null,
+        visionContext: null,
       },
     });
+
+  // Phase 3: look at each photo the user attached and pull a factual
+  // description out of it, so the rest of the graph can write the post around
+  // what's actually in the photo. No-op (and skips the vision host entirely)
+  // when nothing was attached or no vision model is configured — the text-only
+  // generator flow is unchanged. A photo that fails to read is dropped, never
+  // fatal.
+  async describePictures(state: WorkflowChannelsState) {
+    if (!state.pictures?.length || !aiVisionEnabled()) {
+      return {};
+    }
+
+    const described = await Promise.all(
+      state.pictures.map(async (p) => {
+        try {
+          const { description, media } =
+            await this._mediaService.describeMediaById(state.orgId, p.id);
+          return { media, description };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const ok = described.filter(
+      (d): d is { media: { id: string; path: string }; description: string } =>
+        !!d && !!d.description
+    );
+    if (!ok.length) {
+      return {};
+    }
+
+    const visionContext = ok
+      .map((d, i) => `Attached photo ${i + 1}: ${d.description}`)
+      .join('\n\n');
+
+    return { visionContext, userMedia: ok.map((d) => d.media) };
+  }
 
   async startCall(state: WorkflowChannelsState) {
     const runTools = model.bindTools(tools);
@@ -137,11 +185,15 @@ export class AgentGraphService {
     You research should be on the most possible recent data.
     You concat the text of the request together with an internet research based on the text.
     {text}
+    {photos}
     `
     )
       .pipe(runTools)
       .invoke({
         text: state.messages[state.messages.length - 1].content,
+        photos: state.visionContext
+          ? `The user attached photo(s). Here is what is actually in them — treat this as part of the request and research/write around it:\n${state.visionContext}`
+          : '',
       });
 
     return { messages: [response] };
@@ -235,7 +287,9 @@ export class AgentGraphService {
         <!-- BEGIN current content -->
         {text}
         <!-- END current content -->
-       
+
+        {photos}
+
       `
     )
       .pipe(structuredOutput)
@@ -243,6 +297,9 @@ export class AgentGraphService {
         request: state.messages[0].content,
         hooks: state.popularPosts!.map((p) => p.hook).join('\n'),
         text: state.fresearch,
+        photos: state.visionContext
+          ? `<!-- BEGIN attached photo(s) -->\nThe post will show these photo(s); make the hook fit what's actually in them:\n${state.visionContext}\n<!-- END attached photo(s) -->`
+          : '',
       });
 
     return {
@@ -286,9 +343,11 @@ export class AgentGraphService {
         
         User request:
         {request}
-        
+
         current content information:
         {information}
+
+        {photos}
       `
     )
       .pipe(structuredOutput)
@@ -296,6 +355,9 @@ export class AgentGraphService {
         hook: state.hook,
         request: state.messages[0].content,
         information: state.fresearch,
+        photos: state.visionContext
+          ? `Attached photo(s) that will appear with this post — write the content about what's actually shown in them, not something generic:\n${state.visionContext}`
+          : '',
       });
 
     return {
@@ -362,12 +424,29 @@ export class AgentGraphService {
     return { content: all };
   }
 
+  // Attach the user's own photos (Phase 3) onto the generated posts, one photo
+  // per post item (photo 1 → first post, photo 2 → second, ...). No-op when the
+  // user didn't attach any — the DALL-E / text-only paths are unchanged.
+  async attachUserMedia(state: WorkflowChannelsState) {
+    if (!state.userMedia?.length || !state.content?.length) {
+      return {};
+    }
+
+    const content = state.content.map((item, i) =>
+      state.userMedia![i] ? { ...item, image: state.userMedia![i] } : item
+    );
+
+    return { content };
+  }
+
   async isGeneratePicture(state: WorkflowChannelsState) {
-    if (state.isPicture) {
+    // The user's own attached photos take precedence over DALL-E — don't
+    // generate new images when they already brought their own.
+    if (state.isPicture && !state.userMedia?.length) {
       return 'generate-picture';
     }
 
-    return 'post-time';
+    return 'attach-user-media';
   }
 
   async postDateTime(state: WorkflowChannelsState) {
@@ -377,6 +456,7 @@ export class AgentGraphService {
   async *start(orgId: string, body: GeneratorDto) {
     const state = AgentGraphService.state();
     const workflow = state
+      .addNode('describe-pictures', this.describePictures.bind(this))
       .addNode('agent', this.startCall.bind(this))
       .addNode('research', toolNode)
       .addNode('save-research', this.saveResearch.bind(this))
@@ -388,8 +468,10 @@ export class AgentGraphService {
       .addNode('generate-content-fix', this.fixArray.bind(this))
       .addNode('generate-picture', this.generatePictures.bind(this))
       .addNode('upload-pictures', this.uploadPictures.bind(this))
+      .addNode('attach-user-media', this.attachUserMedia.bind(this))
       .addNode('post-time', this.postDateTime.bind(this))
-      .addEdge(START, 'agent')
+      .addEdge(START, 'describe-pictures')
+      .addEdge('describe-pictures', 'agent')
       .addEdge('agent', 'research')
       .addEdge('research', 'save-research')
       .addEdge('save-research', 'find-category')
@@ -403,7 +485,8 @@ export class AgentGraphService {
         this.isGeneratePicture.bind(this)
       )
       .addEdge('generate-picture', 'upload-pictures')
-      .addEdge('upload-pictures', 'post-time')
+      .addEdge('upload-pictures', 'attach-user-media')
+      .addEdge('attach-user-media', 'post-time')
       .addEdge('post-time', END);
 
     const app = workflow.compile();
@@ -413,6 +496,7 @@ export class AgentGraphService {
       isPicture: body.isPicture,
       format: body.format,
       tone: body.tone,
+      pictures: body.pictures?.map((p) => ({ id: p.id })),
       orgId,
     };
 

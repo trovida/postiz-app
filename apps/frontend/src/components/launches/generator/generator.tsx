@@ -22,6 +22,7 @@ import { Select } from '@gitroom/react/form/select';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { AddEditModal } from '@gitroom/frontend/components/new-launch/add.edit.modal';
 import { useToaster } from '@gitroom/react/toaster/toaster';
+import { MultiMediaComponent } from '@gitroom/frontend/components/media/media.component';
 
 const FirstStep: FC = (props) => {
   const { integrations, reloadCalendarView } = useCalendar();
@@ -42,9 +43,10 @@ const FirstStep: FC = (props) => {
       isPicture: false,
       format: 'one_short',
       tone: 'personal',
+      pictures: [] as Array<{ id: string; path: string }>,
     },
   });
-  const [research] = form.watch(['research']);
+  const [research, pictures] = form.watch(['research', 'pictures']);
   const generateStep = useCallback(
     async (reader: ReadableStreamDefaultReader) => {
       const decoder = new TextDecoder('utf-8');
@@ -79,6 +81,11 @@ const FirstStep: FC = (props) => {
 
           {
             switch (data.name) {
+              case 'describe-pictures':
+                setShowStep(
+                  t('looking_at_your_photos', 'Looking at your photos...')
+                );
+                break;
               case 'agent':
                 setShowStep(t('agent_starting', 'Agent starting'));
                 break;
@@ -139,7 +146,14 @@ const FirstStep: FC = (props) => {
       try {
         const response = await fetch('/posts/generator', {
           method: 'POST',
-          body: JSON.stringify(value),
+          body: JSON.stringify({
+            ...value,
+            pictures:
+              (value as any).pictures?.map((p: any) => ({
+                id: p.id,
+                path: p.path,
+              })) || [],
+          }),
         });
         if (!response.body) {
           throw new Error(
@@ -280,13 +294,39 @@ const FirstStep: FC = (props) => {
                     )}
                   </option>
                 </Select>
+                <div className="mt-[6px]">
+                  <MultiMediaComponent
+                    label={t('attach_your_photos', 'Attach your photos')}
+                    description={t(
+                      'well_look_at_them_and_write_the_post_about_whats_in_them',
+                      "Optional — we'll look at them and write the post about what's actually in them."
+                    )}
+                    allData={[]}
+                    dummy={false}
+                    text={research}
+                    value={pictures}
+                    name="pictures"
+                    onChange={(e) =>
+                      form.setValue('pictures', (e.target.value as any) || [], {
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                </div>
                 <div
                   className={clsx('flex items-center', loading && 'opacity-50')}
                 >
                   <Checkbox
-                    disabled={loading}
+                    disabled={loading || pictures?.length > 0}
                     {...form.register('isPicture')}
-                    label={t('add_pictures', 'Add pictures?')}
+                    label={
+                      pictures?.length > 0
+                        ? t(
+                            'using_your_attached_photos',
+                            'Using your attached photos'
+                          )
+                        : t('add_pictures', 'Add pictures? (AI-generated)')
+                    }
                   />
                 </div>
               </div>

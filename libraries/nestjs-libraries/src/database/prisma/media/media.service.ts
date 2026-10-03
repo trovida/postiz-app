@@ -177,6 +177,23 @@ export class MediaService {
     return this._openAi.describeImage(dataUri, question);
   }
 
+  // For the post generator (Phase 3 vision): describe one of the org's own
+  // photos by its media id, and return the resolved media row alongside the
+  // description so the caller can both write about the photo AND attach it to
+  // the generated post. Ownership is enforced by the org-scoped id lookup.
+  async describeMediaById(orgId: string, mediaId: string, question?: string) {
+    const media = await this._mediaRepository.getMediaByIdForOrg(
+      orgId,
+      mediaId
+    );
+    if (!media) {
+      throw new BadRequestException('Image not found');
+    }
+    const dataUri = await this.loadMediaAsDataUri(media.path);
+    const description = await this._openAi.describeImage(dataUri, question);
+    return { description, media: { id: media.id, path: media.path } };
+  }
+
   async generateImage(
     prompt: string,
     org: Organization,

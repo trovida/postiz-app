@@ -53,7 +53,10 @@ Context kind: ${kind}.`,
         'insight_summary',
         { timeout: 30_000, maxRetries: 1 }
       );
-      return result ?? null;
+      // parseStructured's generic widens the object fields to optional; the
+      // value is Zod-validated against summarySchema at runtime (or null), so
+      // this cast is safe.
+      return (result ?? null) as { headline: string; bullets: string[] } | null;
     } catch (err) {
       this._logger.warn(
         `insight summary (${kind}) failed, rendering facts only: ${

@@ -21,7 +21,9 @@ export class CompressionWrapper<M = any, B = any> extends Compressor<any, any> {
   override async prepareUpload(fileIDs: string[]) {
     const { files } = this.uppy.getState();
 
-    // 1) Skip GIFs (and anything missing)
+    // 1) Skip GIFs and HEIC/HEIF (and anything missing). The canvas-based
+    //    compressor can't decode HEIC — those upload raw and are transcoded to
+    //    JPEG on the server.
     const filteredIDs = fileIDs.filter((id) => {
       const f = files[id];
       if (!f) return false;
@@ -29,8 +31,13 @@ export class CompressionWrapper<M = any, B = any> extends Compressor<any, any> {
       const type = f.type ?? '';
       const name = (f.name ?? '').toLowerCase();
       const isGif = type === 'image/gif' || name.endsWith('.gif');
+      const isHeic =
+        type === 'image/heic' ||
+        type === 'image/heif' ||
+        name.endsWith('.heic') ||
+        name.endsWith('.heif');
 
-      return !isGif;
+      return !isGif && !isHeic;
     });
 
     // 2) Let @uppy/compressor do its work (convert/resize/etc)
@@ -88,6 +95,11 @@ export function useUppyUploader(props: {
               'image/jpg',
               'image/gif',
               'image/webp',
+              // iPhone/iPad + Android high-efficiency camera roll. Uploaded raw
+              // (the canvas compressor below can't decode HEIC) and transcoded
+              // to JPEG on the server (MediaService.saveFile / heic-convert).
+              'image/heic',
+              'image/heif',
             ];
           }
           if (type === 'video/*') {
@@ -106,15 +118,28 @@ export function useUppyUploader(props: {
         for (const file of files) {
           if (fileIDs.includes(file.id)) {
             const fileType = file.type;
+            const fileName = (file.name ?? '').toLowerCase();
 
             // Check if file type is allowed
-            const isAllowed = expandedTypes.some((allowedType) => {
+            let isAllowed = expandedTypes.some((allowedType) => {
               if (allowedType.endsWith('/*')) {
                 const baseType = allowedType.replace('/*', '/');
                 return fileType?.startsWith(baseType);
               }
               return fileType === allowedType;
             });
+
+            // Extension fallback: HEIC/HEIF files often arrive with an empty or
+            // wrong MIME (common when dragged from Finder/Photos). If images are
+            // allowed, let a .heic/.heif through by name — the server sniffs the
+            // real bytes and transcodes it to JPEG anyway.
+            if (
+              !isAllowed &&
+              (fileName.endsWith('.heic') || fileName.endsWith('.heif')) &&
+              expandedTypes.some((tt) => tt.startsWith('image/'))
+            ) {
+              isAllowed = true;
+            }
 
             if (!isAllowed) {
               const error = new Error(

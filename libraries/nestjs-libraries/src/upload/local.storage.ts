@@ -22,6 +22,11 @@ const LOCAL_STORAGE_ALLOWED_MIME = new Set<string>([
   'image/avif',
   'image/bmp',
   'image/tiff',
+  // iPhone/iPad + Android high-efficiency camera-roll format. Accepted into
+  // storage so MediaService.saveFile can transcode it to JPEG (browsers and
+  // Instagram can't use HEIC directly). Stored raw only momentarily.
+  'image/heic',
+  'image/heif',
   'video/mp4',
   'audio/mpeg',
   'audio/mp4',

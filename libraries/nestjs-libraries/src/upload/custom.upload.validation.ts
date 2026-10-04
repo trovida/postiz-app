@@ -14,6 +14,11 @@ export const UPLOAD_ALLOWED_MIME = new Set<string>([
   'image/avif',
   'image/bmp',
   'image/tiff',
+  // iPhone/iPad + Android high-efficiency camera roll. Streamed into storage
+  // and transcoded to JPEG by MediaService.saveFile (heic-convert); browsers
+  // and Instagram can't consume HEIC directly.
+  'image/heic',
+  'image/heif',
   'video/mp4',
 ]);
 

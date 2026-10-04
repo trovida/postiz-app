@@ -33,6 +33,13 @@ import {
   getMaxSize,
   uploadStreamToStorage,
 } from '@gitroom/nestjs-libraries/upload/custom.upload.validation';
+import sharp from 'sharp';
+// heic-convert ships no types; its CommonJS default export IS the async
+// convert function. Used because the prebuilt sharp/libvips bundles libheif
+// WITHOUT the (patent-encumbered) HEVC decoder, so sharp alone cannot decode
+// real device HEIC — heic-convert bundles an HEVC-capable libheif WASM.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const heicConvert = require('heic-convert');
 
 // What every upload is normalized to before a provider ever sees it. The
 // service applies exactly these, so a platform-specific need belongs in the
@@ -363,12 +370,73 @@ export class MediaService {
     return this.saveFile(org, uploaded.originalname, uploaded.path);
   }
 
+  private _isHeic(name?: string): boolean {
+    return /\.(heic|heif)$/i.test(name || '');
+  }
+
+  // Transcode a HEIC/HEIF upload (iPhone/iPad + Android high-efficiency camera
+  // roll) to a web-safe JPEG. heic-convert (HEVC-capable libheif WASM) decodes,
+  // then sharp auto-orients (EXIF), caps the dimensions, and re-encodes. Reuses
+  // the storage provider's own read/write/remove so it stays provider-correct.
+  // Returns the originals untouched for non-HEIC files; throws a clear 400 only
+  // when a HEIC genuinely can't be decoded.
+  private async _normalizeHeicUpload(
+    fileName: string,
+    filePath: string,
+    originalName?: string
+  ): Promise<{ fileName: string; filePath: string; originalName?: string }> {
+    if (!this._isHeic(fileName) && !this._isHeic(originalName)) {
+      return { fileName, filePath, originalName };
+    }
+    if (!this.storage.readBytes || !this.storage.uploadSimple) {
+      return { fileName, filePath, originalName };
+    }
+    try {
+      const raw = await this.storage.readBytes(filePath);
+      const decoded: ArrayBuffer = await heicConvert({
+        buffer: raw,
+        format: 'JPEG',
+        quality: 1,
+      });
+      const jpeg = await sharp(Buffer.from(decoded))
+        .rotate()
+        .resize({
+          width: 2048,
+          height: 2048,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality: 88 })
+        .toBuffer();
+      const newUrl = await this.storage.uploadSimple(
+        `data:image/jpeg;base64,${jpeg.toString('base64')}`
+      );
+      // the raw HEIC is no longer referenced by anything — drop it (best-effort)
+      await this.storage.removeFile(filePath).catch(() => undefined);
+      return {
+        fileName: String(newUrl).split('/').pop() || fileName,
+        filePath: newUrl,
+        originalName:
+          (originalName || 'photo').replace(/\.(heic|heif)$/i, '') + '.jpg',
+      };
+    } catch (e) {
+      throw new BadRequestException(
+        'Could not process this HEIC photo — please try a JPEG.'
+      );
+    }
+  }
+
   async saveFile(
     org: string,
     fileName: string,
     filePath: string,
     originalName?: string
   ) {
+    ({ fileName, filePath, originalName } = await this._normalizeHeicUpload(
+      fileName,
+      filePath,
+      originalName
+    ));
     const media = await this._mediaRepository.saveFile(
       org,
       fileName,

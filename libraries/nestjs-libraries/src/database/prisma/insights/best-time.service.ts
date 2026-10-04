@@ -33,7 +33,7 @@ const GENERIC_DEFAULT = [
   { weekday: 6, minutes: 600 },
 ];
 
-interface Cell {
+export interface Cell {
   weekday: number;
   minutes: number;
   score: number;

@@ -39,6 +39,7 @@ import { makeId } from '@gitroom/nestjs-libraries/services/make.is';
 import { ExistingDataContextProvider } from '@gitroom/frontend/components/launches/helpers/use.existing.data';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { hasExtension } from '@gitroom/helpers/utils/has.extension';
+import { useUppyUploader } from '@gitroom/frontend/components/media/new.uploader';
 
 export const AgentChat: FC = () => {
   const { backendUrl } = useVariables();
@@ -189,9 +190,86 @@ const Message: FC<UserMessageProps> = (props) => {
 const NewInput: FC<InputProps> = (props) => {
   const [media, setMedia] = useState([] as { path: string; id: string }[]);
   const [value, setValue] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const dragDepth = useRef(0);
+  const t = useT();
   const { properties } = useContext(PropertiesContext);
+
+  // Drag-and-drop / paste image+video attach. Uploads through the SAME pipeline
+  // as the "Insert Media" picker (so HEIC transcode + server validation apply),
+  // then appends to `media` — which renders as a thumbnail and is sent to the
+  // agent as `Image: <url>` exactly like a picked attachment. (The agent model
+  // is text-only, so this attaches the media to posts; it does not give the AI
+  // vision over the image contents.)
+  const dropUppy = useUppyUploader({
+    allowedFileTypes: 'image/*,video/mp4,video/quicktime',
+    onUploadSuccess: (arr: any) => {
+      const added = (Array.isArray(arr) ? arr : [arr]).filter(Boolean);
+      if (added.length) {
+        setMedia((prev) => [...prev, ...added]);
+      }
+    },
+    onStart: () => {},
+    onEnd: () => {},
+  });
+
+  const handleFiles = useCallback(
+    (files: File[]) => {
+      const accepted = files.filter(
+        (f) =>
+          f.type.startsWith('image/') ||
+          f.type.startsWith('video/') ||
+          /\.(heic|heif|png|jpe?g|gif|webp|avif|mp4|mov|m4v)$/i.test(f.name)
+      );
+      if (accepted.length) {
+        // @ts-ignore - useUppyUploader returns the Uppy instance
+        dropUppy.addFiles(accepted);
+      }
+    },
+    [dropUppy]
+  );
+
   return (
-    <>
+    <div
+      className="relative"
+      onDragEnter={(e) => {
+        e.preventDefault();
+        dragDepth.current += 1;
+        setDragging(true);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        dragDepth.current -= 1;
+        if (dragDepth.current <= 0) {
+          dragDepth.current = 0;
+          setDragging(false);
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        dragDepth.current = 0;
+        setDragging(false);
+        handleFiles(Array.from(e.dataTransfer?.files || []));
+      }}
+      onPaste={(e) => {
+        const files = Array.from(e.clipboardData?.items || [])
+          .filter((it) => it.kind === 'file')
+          .map((it) => it.getAsFile())
+          .filter(Boolean) as File[];
+        if (files.length) {
+          e.preventDefault();
+          handleFiles(files);
+        }
+      }}
+    >
+      {dragging && (
+        <div className="pointer-events-none absolute inset-0 z-[40] flex items-center justify-center rounded-[8px] border-2 border-dashed border-[#612bd3] bg-black/50 text-[14px] text-white">
+          {t('drop_to_attach', 'Drop images or videos to attach')}
+        </div>
+      )}
       <MediaPortal
         value={value}
         media={media}
@@ -235,7 +313,7 @@ Use the following social media platforms: ${JSON.stringify(
           return send;
         }}
       />
-    </>
+    </div>
   );
 };
 

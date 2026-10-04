@@ -4,6 +4,7 @@ import {
   Get,
   NotFoundException,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { Organization } from '@prisma/client';
@@ -12,6 +13,11 @@ import { ApiTags } from '@nestjs/swagger';
 import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insights/cadence.service';
 import { CoverageService } from '@gitroom/nestjs-libraries/database/prisma/insights/coverage.service';
 import { AnalyticsSnapshotService } from '@gitroom/nestjs-libraries/database/prisma/insights/analytics-snapshot.service';
+import {
+  BrandProfileService,
+  BrandProfileInput,
+} from '@gitroom/nestjs-libraries/database/prisma/insights/brand-profile.service';
+import { BrandContextService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-context.service';
 import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
 
 // The Insights layer — interpretation over the store's own data (distinct from
@@ -25,6 +31,8 @@ export class InsightsController {
     private _cadenceService: CadenceService,
     private _coverageService: CoverageService,
     private _analyticsSnapshotService: AnalyticsSnapshotService,
+    private _brandProfileService: BrandProfileService,
+    private _brandContextService: BrandContextService,
     private _mediaService: MediaService
   ) {}
 
@@ -101,5 +109,44 @@ export class InsightsController {
       limit: limit ? +limit : 200,
       source: 'backfill',
     });
+  }
+
+  // Pillar D / #4 — brand copilot: the per-org brand profile + exemplar pool
+  // that grounds generation in the store's own voice.
+  @Get('/brand')
+  async getBrand(@GetOrgFromRequest() org: Organization) {
+    this._assertEnabled();
+    const [profile, contextPreview] = await Promise.all([
+      this._brandProfileService.get(org.id),
+      this._brandContextService.build(org.id),
+    ]);
+    return { profile, contextPreview };
+  }
+
+  @Put('/brand')
+  async updateBrand(
+    @GetOrgFromRequest() org: Organization,
+    @Body() body: BrandProfileInput
+  ) {
+    this._assertEnabled();
+    return this._brandProfileService.update(org.id, body);
+  }
+
+  @Post('/brand/seed')
+  async seedBrand(@GetOrgFromRequest() org: Organization) {
+    this._assertEnabled();
+    return this._brandProfileService.seedFromPosts(org.id);
+  }
+
+  @Post('/brand/backfill')
+  async backfillBrand(
+    @GetOrgFromRequest() org: Organization,
+    @Body('limit') limit?: number
+  ) {
+    this._assertEnabled();
+    return this._brandProfileService.backfillExemplars(
+      org.id,
+      limit ? +limit : undefined
+    );
   }
 }

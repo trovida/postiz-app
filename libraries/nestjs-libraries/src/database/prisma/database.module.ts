@@ -54,6 +54,8 @@ import { InsightSummaryService } from '@gitroom/nestjs-libraries/database/prisma
 import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insights/cadence.service';
 import { CoverageService } from '@gitroom/nestjs-libraries/database/prisma/insights/coverage.service';
 import { AnalyticsSnapshotService } from '@gitroom/nestjs-libraries/database/prisma/insights/analytics-snapshot.service';
+import { BrandProfileService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-profile.service';
+import { BrandContextService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-context.service';
 
 @Global()
 @Module({
@@ -117,6 +119,8 @@ import { AnalyticsSnapshotService } from '@gitroom/nestjs-libraries/database/pri
     CadenceService,
     CoverageService,
     AnalyticsSnapshotService,
+    BrandProfileService,
+    BrandContextService,
   ],
   get exports() {
     return this.providers;

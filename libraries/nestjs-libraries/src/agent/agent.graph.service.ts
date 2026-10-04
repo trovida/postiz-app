@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import { PostsService } from '@gitroom/nestjs-libraries/database/prisma/posts/posts.service';
 import { z } from 'zod';
 import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
+import { BrandContextService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-context.service';
 import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
 import { GeneratorDto } from '@gitroom/nestjs-libraries/dtos/generator/generator.dto';
 import { generationError } from '@gitroom/nestjs-libraries/openai/generation.error';
@@ -56,6 +57,7 @@ interface WorkflowChannelsState {
   pictures?: { id: string }[];
   userMedia?: { id: string; path: string }[];
   visionContext?: string;
+  brandContext?: string;
 }
 
 const category = z.object({
@@ -111,7 +113,8 @@ export class AgentGraphService {
   private storage = UploadFactory.createStorage();
   constructor(
     private _postsService: PostsService,
-    private _mediaService: MediaService
+    private _mediaService: MediaService,
+    private _brandContextService: BrandContextService
   ) {}
   static state = () =>
     new StateGraph<WorkflowChannelsState>({
@@ -136,6 +139,7 @@ export class AgentGraphService {
         pictures: null,
         userMedia: null,
         visionContext: null,
+        brandContext: null,
       },
     });
 
@@ -145,6 +149,18 @@ export class AgentGraphService {
   // when nothing was attached or no vision model is configured — the text-only
   // generator flow is unchanged. A photo that fails to read is dropped, never
   // fatal.
+  // Pillar D / #4: load the store's brand voice/context (profile + exemplars)
+  // so the hook and content are written in the shop's established voice. No-op
+  // when the org has no brand data; never fatal.
+  async loadBrand(state: WorkflowChannelsState) {
+    try {
+      const brandContext = await this._brandContextService.build(state.orgId);
+      return brandContext ? { brandContext } : {};
+    } catch {
+      return {};
+    }
+  }
+
   async describePictures(state: WorkflowChannelsState) {
     if (!state.pictures?.length || !aiVisionEnabled()) {
       return {};
@@ -290,6 +306,8 @@ export class AgentGraphService {
 
         {photos}
 
+        {brand}
+
       `
     )
       .pipe(structuredOutput)
@@ -299,6 +317,9 @@ export class AgentGraphService {
         text: state.fresearch,
         photos: state.visionContext
           ? `<!-- BEGIN attached photo(s) -->\nThe post will show these photo(s); make the hook fit what's actually in them:\n${state.visionContext}\n<!-- END attached photo(s) -->`
+          : '',
+        brand: state.brandContext
+          ? `<!-- BEGIN brand voice -->\nWrite in THIS shop's established voice (match the tone/register; do not copy the examples verbatim):\n${state.brandContext}\n<!-- END brand voice -->`
           : '',
       });
 
@@ -348,6 +369,8 @@ export class AgentGraphService {
         {information}
 
         {photos}
+
+        {brand}
       `
     )
       .pipe(structuredOutput)
@@ -357,6 +380,9 @@ export class AgentGraphService {
         information: state.fresearch,
         photos: state.visionContext
           ? `Attached photo(s) that will appear with this post — write the content about what's actually shown in them, not something generic:\n${state.visionContext}`
+          : '',
+        brand: state.brandContext
+          ? `Write the content in THIS shop's established voice (match the tone/register below; do not copy the examples verbatim):\n${state.brandContext}`
           : '',
       });
 
@@ -456,6 +482,7 @@ export class AgentGraphService {
   async *start(orgId: string, body: GeneratorDto) {
     const state = AgentGraphService.state();
     const workflow = state
+      .addNode('load-brand', this.loadBrand.bind(this))
       .addNode('describe-pictures', this.describePictures.bind(this))
       .addNode('agent', this.startCall.bind(this))
       .addNode('research', toolNode)
@@ -470,7 +497,8 @@ export class AgentGraphService {
       .addNode('upload-pictures', this.uploadPictures.bind(this))
       .addNode('attach-user-media', this.attachUserMedia.bind(this))
       .addNode('post-time', this.postDateTime.bind(this))
-      .addEdge(START, 'describe-pictures')
+      .addEdge(START, 'load-brand')
+      .addEdge('load-brand', 'describe-pictures')
       .addEdge('describe-pictures', 'agent')
       .addEdge('agent', 'research')
       .addEdge('research', 'save-research')

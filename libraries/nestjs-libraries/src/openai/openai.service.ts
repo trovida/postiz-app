@@ -214,6 +214,62 @@ Clips must not overlap. Write the title and the post in this language, whatever 
     return (r?.category as string) ?? null;
   }
 
+  // Pillar D / #4 — summarize a retailer's established brand voice from their
+  // recent posts, so the generator/agent can write new posts that sound like
+  // them. Grounded only in the posts; invents no facts. Returns null on failure.
+  async summarizeBrandVoice(
+    posts: string[]
+  ): Promise<{
+    voice: string;
+    audience: string;
+    pillars: string[];
+    factsMarkdown: string;
+  } | null> {
+    const sample = (posts || [])
+      .filter(Boolean)
+      .slice(0, 50)
+      .map((p, i) => `${i + 1}. ${p.slice(0, 400)}`)
+      .join('\n');
+    if (!sample.trim()) {
+      return null;
+    }
+    const schema = z.object({
+      voice: z.string(),
+      audience: z.string(),
+      pillars: z.array(z.string()),
+      factsMarkdown: z.string(),
+    });
+    const r = await parseStructured(
+      {
+        model: 'gpt-4.1',
+        messages: [
+          {
+            role: 'system',
+            content: `You are given a single brick-and-mortar retailer's recent social-media posts. Summarize the brand's established voice so an AI can write new posts that sound like them.
+Return JSON with:
+- "voice": 2-3 sentences describing the tone, register, and any recurring stylistic quirks.
+- "audience": one sentence on who they're talking to.
+- "pillars": 3-6 recurring content themes.
+- "factsMarkdown": a short markdown bullet list of concrete, recurring facts about the business (products, location cues, offers, hours).
+Base everything ONLY on the posts provided — never invent facts, products, or claims.`,
+          },
+          { role: 'user', content: sample },
+        ],
+      },
+      schema,
+      'brand_voice',
+      { timeout: 40_000, maxRetries: 1 }
+    );
+    return (
+      (r as {
+        voice: string;
+        audience: string;
+        pillars: string[];
+        factsMarkdown: string;
+      } | null) ?? null
+    );
+  }
+
   // Image UNDERSTANDING: look at an uploaded photo and write a ready-to-post
   // caption about what it actually shows. `image` is a base64 data URI (the
   // caller inlines the bytes so the vision host never has to fetch our URL).

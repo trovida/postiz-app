@@ -440,6 +440,38 @@ model PostMetricsSnapshot {
   @@index([organizationId, capturedAt])
 }
 
+// Pillar D / #4 — brand copilot. First-class Prisma models (NOT mastra_knowledge_*):
+// a per-org brand profile + a pool of exemplar posts, SQL-ranked by recency (and
+// engagement once snapshots exist). Threaded into the generator like visionContext.
+model BrandProfile {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  name           String?
+  voice          String?
+  audience       String?
+  pillars        Json?
+  bannedPhrases  Json?
+  sampleCaptions Json?
+  factsMarkdown  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model BrandExemplar {
+  id              String   @id @default(cuid())
+  organizationId  String
+  postId          String   @unique
+  integrationId   String?
+  category        String?
+  content         String
+  engagementScore Float?
+  publishDate     DateTime
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, engagementScore])
+  @@index([organizationId, publishDate])
+}
+
 model Signatures {
   id             String       @id @default(uuid())
   organizationId String

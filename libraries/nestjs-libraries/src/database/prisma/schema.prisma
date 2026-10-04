@@ -227,6 +227,11 @@ model Media {
   thumbnailTimestamp Int?
   status             String              @default("ready")
   processingError    String?
+  aiCategory         String?
+  aiDescription      String?
+  aiLabels           String?
+  aiAnalyzedAt       DateTime?
+  aiModel            String?
   organization       Organization        @relation(fields: [organizationId], references: [id])
   agencies           SocialMediaAgency[]
   userPicture        User[]

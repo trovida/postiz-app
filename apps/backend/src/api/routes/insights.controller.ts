@@ -3,6 +3,7 @@ import { Organization } from '@prisma/client';
 import { GetOrgFromRequest } from '@gitroom/nestjs-libraries/user/org.from.request';
 import { ApiTags } from '@nestjs/swagger';
 import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insights/cadence.service';
+import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
 
 // The Insights layer — interpretation over the store's own data (distinct from
 // the raw per-platform Analytics page). Gated on ENABLE_INSIGHTS (fail-closed),
@@ -11,7 +12,10 @@ import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insigh
 @ApiTags('Insights')
 @Controller('/insights')
 export class InsightsController {
-  constructor(private _cadenceService: CadenceService) {}
+  constructor(
+    private _cadenceService: CadenceService,
+    private _mediaService: MediaService
+  ) {}
 
   private _assertEnabled() {
     if (process.env.ENABLE_INSIGHTS !== 'true') {
@@ -35,5 +39,13 @@ export class InsightsController {
       integrationId: integrationId || undefined,
       tz: tz || undefined,
     });
+  }
+
+  // Pillar A — content-mix audit: what the store's analyzed photo library is
+  // made of, the retail gaps, and a facts-grounded narrative.
+  @Get('/audit')
+  async audit(@GetOrgFromRequest() org: Organization) {
+    this._assertEnabled();
+    return this._mediaService.contentAudit(org.id);
   }
 }

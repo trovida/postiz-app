@@ -6,6 +6,12 @@ import { SubscriptionService } from '@gitroom/nestjs-libraries/database/prisma/s
 import { Organization } from '@prisma/client';
 import { SaveMediaInformationDto } from '@gitroom/nestjs-libraries/dtos/media/save.media.information.dto';
 import { CaptionMediaDto } from '@gitroom/nestjs-libraries/dtos/media/caption.media.dto';
+import { InsightSummaryService } from '@gitroom/nestjs-libraries/database/prisma/insights/insight-summary.service';
+import { RETAIL_GAP_CATEGORIES } from '@gitroom/nestjs-libraries/database/prisma/insights/content-taxonomy';
+import {
+  visionModel,
+  aiVisionEnabled,
+} from '@gitroom/nestjs-libraries/openai/ai.provider';
 import { VideoManager } from '@gitroom/nestjs-libraries/videos/video.manager';
 import { VideoDto } from '@gitroom/nestjs-libraries/dtos/videos/video.dto';
 import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
@@ -92,7 +98,8 @@ export class MediaService {
     private _openAi: OpenaiService,
     private _subscriptionService: SubscriptionService,
     private _videoManager: VideoManager,
-    private _temporalService: TemporalService
+    private _temporalService: TemporalService,
+    private _insightSummary: InsightSummaryService
   ) {}
 
   async deleteMedia(org: string, id: string) {
@@ -194,6 +201,107 @@ export class MediaService {
     return { description, media: { id: media.id, path: media.path } };
   }
 
+  // --- Pillar A / #1: content-mix audit + auto-tagged library ---
+
+  // Analyze one image (base64-inlined, SSRF-safe) and persist the structured
+  // result. Shared by the on-upload hook, the single-item endpoint, and the
+  // backfill. A non-image / unreadable file throws out of loadMediaAsDataUri
+  // and is handled by the caller.
+  private async _analyzeAndStore(
+    orgId: string,
+    media: { id: string; path: string }
+  ) {
+    const dataUri = await this.loadMediaAsDataUri(media.path);
+    const result = await this._openAi.analyzeImageStructured(dataUri);
+    if (!result) {
+      return null;
+    }
+    return this._mediaRepository.updateAiAnalysis(media.id, {
+      aiCategory: result.category,
+      aiDescription: result.altText,
+      aiLabels: JSON.stringify(result.labels),
+      aiModel: visionModel(),
+    });
+  }
+
+  async analyzeMedia(orgId: string, id: string) {
+    const media = await this._mediaRepository.getMediaByIdForOrg(orgId, id);
+    if (!media) {
+      throw new BadRequestException('Image not found');
+    }
+    const stored = await this._analyzeAndStore(orgId, {
+      id: media.id,
+      path: media.path,
+    });
+    if (!stored) {
+      throw new BadRequestException('Could not analyze this image');
+    }
+    return stored;
+  }
+
+  // Analyze the org's not-yet-analyzed images. Bounded per call (default 10,
+  // max 25) so a single request stays well inside HTTP/Caddy timeouts; the
+  // client re-calls while `hasMore` is true (progressive backfill).
+  async backfillAnalysis(orgId: string, limit = 10) {
+    const cap = Math.min(Math.max(limit || 10, 1), 25);
+    const pending = await this._mediaRepository.findUnanalyzedForOrg(
+      orgId,
+      visionModel(),
+      cap
+    );
+    let analyzed = 0;
+    for (const m of pending) {
+      try {
+        if (await this._analyzeAndStore(orgId, m)) {
+          analyzed++;
+        }
+      } catch {
+        /* skip unreadable / non-image items */
+      }
+    }
+    return {
+      processed: pending.length,
+      analyzed,
+      hasMore: pending.length === cap,
+    };
+  }
+
+  async applyAlt(orgId: string, id: string) {
+    return this._mediaRepository.applyAiAlt(orgId, id);
+  }
+
+  // The content-mix audit over the analyzed media library: what the store's
+  // photos are made of, the retail gaps, and a facts-grounded narrative.
+  async contentAudit(orgId: string) {
+    const grouped = await this._mediaRepository.getAnalyzedCategories(orgId);
+    const total = grouped.reduce((s, g) => s + g._count._all, 0);
+    const mix = grouped
+      .map((g) => ({
+        category: g.aiCategory as string,
+        count: g._count._all,
+        pct: total ? Math.round((g._count._all / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+    const present = new Set(mix.map((m) => m.category));
+    const gaps = RETAIL_GAP_CATEGORIES.filter((c) => !present.has(c));
+    const facts = { scope: 'library', totalAnalyzed: total, mix, gaps };
+
+    if (total === 0) {
+      return {
+        ...facts,
+        narrative: {
+          headline: 'Your photo library isn’t analyzed yet.',
+          bullets: [
+            'Run a library scan to see what your photos are made of and search them by content.',
+          ],
+        },
+      };
+    }
+
+    const narrative = await this._insightSummary.summarize('content', facts);
+    return { ...facts, narrative };
+  }
+
   async generateImage(
     prompt: string,
     org: Organization,
@@ -255,18 +363,27 @@ export class MediaService {
     return this.saveFile(org, uploaded.originalname, uploaded.path);
   }
 
-  saveFile(
+  async saveFile(
     org: string,
     fileName: string,
     filePath: string,
     originalName?: string
   ) {
-    return this._mediaRepository.saveFile(
+    const media = await this._mediaRepository.saveFile(
       org,
       fileName,
       filePath,
       originalName
     );
+    // Pillar A: analyze the new photo in the background. Fire-and-forget —
+    // never blocks the upload; non-images (and failures) are swallowed.
+    if (aiVisionEnabled() && (media as { id?: string })?.id) {
+      this._analyzeAndStore(org, {
+        id: (media as { id: string }).id,
+        path: filePath,
+      }).catch(() => undefined);
+    }
+    return media;
   }
 
   // Saves an upload and, when a normalizer is configured, hands it to the

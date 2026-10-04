@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { shuffle } from 'lodash';
 import { z } from 'zod';
+import { SHOT_TYPES } from '@gitroom/nestjs-libraries/database/prisma/insights/content-taxonomy';
 import {
   getTextClient,
   getImageClient,
@@ -109,6 +110,69 @@ Clips must not overlap. Write the title and the post in this language, whatever 
       { timeout: 60_000, maxRetries: 1 }
     );
     return (response.choices[0]?.message?.content || '').trim();
+  }
+
+  // Structured image analysis for the content-mix audit + auto-tagged library
+  // (Pillar A / #1): classify a photo into one controlled retail shot-type +
+  // accessibility alt-text + a few searchable labels. `image` is a base64 data
+  // URI. Returns null if the model's output can't be parsed/validated.
+  async analyzeImageStructured(
+    image: string
+  ): Promise<{ category: string; altText: string; labels: string[] } | null> {
+    if (!aiVisionEnabled()) {
+      throw new Error(
+        'AI vision is not configured (set AI_VISION_MODEL — and AI_VISION_API_KEY / AI_VISION_BASE_URL if different from the text provider — to a vision-capable OpenAI-compatible model).'
+      );
+    }
+
+    const schema = z.object({
+      category: z.enum(SHOT_TYPES as unknown as [string, ...string[]]),
+      altText: z.string(),
+      labels: z.array(z.string()),
+    });
+
+    const response = await getVisionClient().chat.completions.create(
+      {
+        model: visionModel(),
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text:
+                  `Analyze this retail photo. Respond with ONLY a single JSON object (no prose, no markdown fences) with exactly these keys:\n` +
+                  `- "category": the single best-fitting shot type, one of: ${SHOT_TYPES.join(
+                    ', '
+                  )}. Use "other" if none clearly fits.\n` +
+                  `- "altText": factual accessibility alt-text, <= 160 characters, describing only what is visible.\n` +
+                  `- "labels": an array of 3-8 lowercase search terms (objects, colours, setting). No sentences.\n` +
+                  `Describe only what is visible; never invent details.`,
+              },
+              { type: 'image_url', image_url: { url: image } },
+            ],
+          },
+        ],
+      },
+      { timeout: 60_000, maxRetries: 1 }
+    );
+
+    const raw = response.choices[0]?.message?.content ?? '';
+    try {
+      const cleaned = raw
+        .trim()
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '');
+      const parsed = schema.parse(JSON.parse(cleaned));
+      return {
+        category: parsed.category,
+        altText: (parsed.altText || '').slice(0, 200),
+        labels: (parsed.labels || []).slice(0, 8),
+      };
+    } catch {
+      return null;
+    }
   }
 
   // Image UNDERSTANDING: look at an uploaded photo and write a ready-to-post

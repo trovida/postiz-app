@@ -120,6 +120,75 @@ export class MediaRepository {
     });
   }
 
+  // --- Pillar A / #1: content analysis (auto-tagged library + mix audit) ---
+
+  updateAiAnalysis(
+    id: string,
+    data: {
+      aiCategory: string;
+      aiDescription: string;
+      aiLabels: string;
+      aiModel: string;
+    }
+  ) {
+    return this._media.model.media.update({
+      where: { id },
+      data: { ...data, aiAnalyzedAt: new Date() },
+      select: {
+        id: true,
+        aiCategory: true,
+        aiDescription: true,
+        aiLabels: true,
+        aiAnalyzedAt: true,
+      },
+    });
+  }
+
+  // Images not yet analyzed, or analyzed by a different model (so a model
+  // change re-analyzes). Oldest-first? No — newest-first (most relevant).
+  findUnanalyzedForOrg(org: string, model: string, limit: number) {
+    return this._media.model.media.findMany({
+      where: {
+        organizationId: org,
+        deletedAt: null,
+        type: 'image',
+        OR: [{ aiAnalyzedAt: null }, { aiModel: { not: model } }],
+      },
+      select: { id: true, path: true },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Mix distribution over the analyzed library.
+  getAnalyzedCategories(org: string) {
+    return this._media.model.media.groupBy({
+      by: ['aiCategory'],
+      where: {
+        organizationId: org,
+        deletedAt: null,
+        aiCategory: { not: null },
+      },
+      _count: { _all: true },
+    });
+  }
+
+  // Copy the AI alt-text into the (accessibility) alt field — one-click.
+  async applyAiAlt(org: string, id: string) {
+    const m = await this._media.model.media.findFirst({
+      where: { id, organizationId: org, deletedAt: null },
+      select: { aiDescription: true },
+    });
+    if (!m?.aiDescription) {
+      return { applied: false as const };
+    }
+    await this._media.model.media.update({
+      where: { id },
+      data: { alt: m.aiDescription },
+    });
+    return { applied: true as const, alt: m.aiDescription };
+  }
+
   deleteMedia(org: string, id: string) {
     return this._media.model.media.update({
       where: {
@@ -158,12 +227,30 @@ export class MediaRepository {
   async getMedia(org: string, page: number, search?: string) {
     const pageNum = (page || 1) - 1;
     const trimmedSearch = search?.trim();
+    // Search by what's IN the photo (Pillar A), not just the filename: match
+    // the AI description + labels as well as the original name.
     const searchFilter = trimmedSearch
       ? {
-          originalName: {
-            contains: trimmedSearch,
-            mode: 'insensitive' as const,
-          },
+          OR: [
+            {
+              originalName: {
+                contains: trimmedSearch,
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              aiDescription: {
+                contains: trimmedSearch,
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              aiLabels: {
+                contains: trimmedSearch,
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
         }
       : {};
     const query = {
@@ -196,6 +283,8 @@ export class MediaRepository {
         thumbnail: true,
         alt: true,
         thumbnailTimestamp: true,
+        aiCategory: true,
+        aiLabels: true,
       },
       skip: pageNum * 18,
       take: 18,

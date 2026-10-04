@@ -94,6 +94,32 @@ export class MediaController {
     return this._mediaService.captionFromMedia(org.id, body);
   }
 
+  // Pillar A / #1 — content analysis for the auto-tagged library + mix audit.
+  // (Declared above the `/:endpoint` catch-all; backfill before `/:id/analyze`.)
+  @Post('/analyze/backfill')
+  async backfillAnalysis(
+    @GetOrgFromRequest() org: Organization,
+    @Body('limit') limit?: number
+  ) {
+    return this._mediaService.backfillAnalysis(org.id, limit ? +limit : undefined);
+  }
+
+  @Post('/:id/analyze')
+  async analyzeMedia(
+    @GetOrgFromRequest() org: Organization,
+    @Param('id') id: string
+  ) {
+    return this._mediaService.analyzeMedia(org.id, id);
+  }
+
+  @Post('/:id/apply-alt')
+  async applyAlt(
+    @GetOrgFromRequest() org: Organization,
+    @Param('id') id: string
+  ) {
+    return this._mediaService.applyAlt(org.id, id);
+  }
+
   @Post('/upload-server')
   @UseInterceptors(FileInterceptor('file', streamUploadOptions()))
   async uploadServer(

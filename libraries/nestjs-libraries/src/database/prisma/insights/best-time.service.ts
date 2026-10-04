@@ -60,13 +60,83 @@ export class BestTimeService {
     private _insightSummary: InsightSummaryService
   ) {}
 
-  // Deferred #4 — resolve the open-hours window: owner-set BrandProfile.openHours
-  // (sane, start<end) > env override > 08:00-21:00 default. Fail-soft.
+  // Deferred #4 auto-pull — process-local TTL cache of the core-api hours
+  // response (both hits AND misses, so a bad/unreachable URL isn't re-hit every
+  // best-time call). Best-time is interactive/low-frequency, so a 6h in-process
+  // memo is plenty — no Redis coupling.
+  private _hoursCache = new Map<
+    string,
+    { w: { startMinutes: number; endMinutes: number } | null; exp: number }
+  >();
+  private static readonly HOURS_TTL_MS = 6 * 60 * 60 * 1000;
+
+  private async _fetchCoreApiHours(
+    orgId: string
+  ): Promise<{ startMinutes: number; endMinutes: number } | null> {
+    const base = process.env.TROVIDA_HOURS_URL;
+    if (!base) {
+      return null; // feature OFF — exactly the prior behaviour
+    }
+    const now = Date.now();
+    const cached = this._hoursCache.get(orgId);
+    if (cached && cached.exp > now) {
+      return cached.w;
+    }
+    let result: { startMinutes: number; endMinutes: number } | null = null;
+    try {
+      const u = new URL(base);
+      u.searchParams.set('org', orgId);
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 3000);
+      const res = await fetch(u.toString(), {
+        headers: { 'x-postiz-secret': process.env.TROVIDA_HOURS_SECRET || '' },
+        signal: ac.signal,
+      }).finally(() => clearTimeout(timer));
+      if (res.ok) {
+        const j = (await res.json()) as {
+          openHours?: { startMinutes?: number; endMinutes?: number };
+        };
+        const oh = j?.openHours;
+        if (
+          oh &&
+          Number.isFinite(oh.startMinutes) &&
+          Number.isFinite(oh.endMinutes) &&
+          (oh.endMinutes as number) > (oh.startMinutes as number)
+        ) {
+          result = {
+            startMinutes: oh.startMinutes as number,
+            endMinutes: oh.endMinutes as number,
+          };
+        }
+      }
+    } catch {
+      result = null; // unreachable / timeout / bad payload -> fall back
+    }
+    this._hoursCache.set(orgId, {
+      w: result,
+      exp: now + BestTimeService.HOURS_TTL_MS,
+    });
+    return result;
+  }
+
+  // Deferred #4 — resolve the open-hours window. Precedence (most specific wins):
+  //   owner-set BrandProfile.openHours  >  Trovida core-api real store hours
+  //   >  BEST_TIME_OPEN_*_MIN env  >  08:00-21:00 default.
+  // Fail-soft at every tier.
   private async _openWindow(orgId: string): Promise<{ start: number; end: number }> {
     const envStart = parseInt(process.env.BEST_TIME_OPEN_START_MIN || '', 10);
     const envEnd = parseInt(process.env.BEST_TIME_OPEN_END_MIN || '', 10);
     let start = Number.isFinite(envStart) ? envStart : OPEN_START;
     let end = Number.isFinite(envEnd) ? envEnd : OPEN_END;
+
+    // Auto-pull the linked store's real trading hours from Trovida core-api
+    // (over env, under an explicit owner override). OFF unless TROVIDA_HOURS_URL
+    // is set; cached + fail-soft so it never slows or breaks best-time.
+    const fetched = await this._fetchCoreApiHours(orgId);
+    if (fetched) {
+      start = fetched.startMinutes;
+      end = fetched.endMinutes;
+    }
     try {
       const bp = await this._brandProfile.model.brandProfile.findUnique({
         where: { organizationId: orgId },

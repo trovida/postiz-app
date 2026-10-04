@@ -412,6 +412,34 @@ model Integration {
   @@index([disabled])
 }
 
+// Per-post performance over time (Pillar C / #3 foundation; also powers #4's
+// engagement-ranked exemplars and #1's visual-performance correlation).
+// One row per post per capture-day; UPSERT on (postId, capturedAt) → the daily
+// job and the backfill are safely re-runnable.
+model PostMetricsSnapshot {
+  id              String   @id @default(cuid())
+  organizationId  String
+  integrationId   String
+  postId          String
+  releaseId       String?
+  capturedAt      DateTime @db.Date
+  source          String   @default("backfill")
+  metrics         Json
+  likes           Int?
+  comments        Int?
+  shares          Int?
+  saves           Int?
+  views           Int?
+  reach           Int?
+  engagementScore Float    @default(0)
+  engagementRate  Float?
+  createdAt       DateTime @default(now())
+
+  @@unique([postId, capturedAt])
+  @@index([integrationId, capturedAt])
+  @@index([organizationId, capturedAt])
+}
+
 model Signatures {
   id             String       @id @default(uuid())
   organizationId String

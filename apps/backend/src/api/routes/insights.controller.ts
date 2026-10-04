@@ -11,6 +11,7 @@ import { GetOrgFromRequest } from '@gitroom/nestjs-libraries/user/org.from.reque
 import { ApiTags } from '@nestjs/swagger';
 import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insights/cadence.service';
 import { CoverageService } from '@gitroom/nestjs-libraries/database/prisma/insights/coverage.service';
+import { AnalyticsSnapshotService } from '@gitroom/nestjs-libraries/database/prisma/insights/analytics-snapshot.service';
 import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
 
 // The Insights layer — interpretation over the store's own data (distinct from
@@ -23,6 +24,7 @@ export class InsightsController {
   constructor(
     private _cadenceService: CadenceService,
     private _coverageService: CoverageService,
+    private _analyticsSnapshotService: AnalyticsSnapshotService,
     private _mediaService: MediaService
   ) {}
 
@@ -82,5 +84,22 @@ export class InsightsController {
       limit ? +limit : undefined,
       days ? +days : undefined
     );
+  }
+
+  // Pillar C foundation — snapshot this org's recent post performance into
+  // PostMetricsSnapshot (the data #3 best-time and #4 engagement ranking read).
+  // On-demand backfill (the daily Temporal job is dormant without RUN_CRON).
+  @Post('/snapshots/backfill')
+  async snapshotsBackfill(
+    @GetOrgFromRequest() org: Organization,
+    @Body('days') days?: number,
+    @Body('limit') limit?: number
+  ) {
+    this._assertEnabled();
+    return this._analyticsSnapshotService.snapshotOrg(org.id, {
+      days: days ? +days : 90,
+      limit: limit ? +limit : 200,
+      source: 'backfill',
+    });
   }
 }

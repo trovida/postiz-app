@@ -580,6 +580,21 @@ html[dir='rtl'] [dir='ltr'] {
   display: none !important;
 }
 
+/* The rules above hide the Dashboard chrome because Postiz uses the inline
+   Dashboard only as a thin file-input strip. The "Camera" (webcam) modal is a
+   REAL Dashboard, so restore its source picker + panel chrome — scoped to
+   .uppy-Dashboard--modal so the inline strips are untouched. Without this the
+   camera modal renders as an empty box (the Camera tab is display:none'd). */
+.uppy-Dashboard--modal .uppy-Dashboard-AddFiles {
+  display: flex !important;
+}
+.uppy-Dashboard--modal .uppy-DashboardContent-bar {
+  display: flex !important;
+}
+.uppy-Dashboard--modal .uppy-Dashboard-files {
+  display: block !important;
+}
+
 .uppy-StatusBar-progress {
   display: block;
 }

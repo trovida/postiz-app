@@ -469,6 +469,7 @@ export const MediaBox: FC<{
           open={cameraOpen}
           onRequestClose={() => setCameraOpen(false)}
           plugins={['Webcam']}
+          disableLocalFiles={true}
           closeModalOnClickOutside={true}
           proudlyDisplayPoweredByUppy={false}
         />

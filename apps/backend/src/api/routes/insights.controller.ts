@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   NotFoundException,
+  Param,
   Post,
   Put,
   Query,
@@ -18,6 +19,7 @@ import {
   BrandProfileInput,
 } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-profile.service';
 import { BrandContextService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-context.service';
+import { BestTimeService } from '@gitroom/nestjs-libraries/database/prisma/insights/best-time.service';
 import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
 
 // The Insights layer — interpretation over the store's own data (distinct from
@@ -33,6 +35,7 @@ export class InsightsController {
     private _analyticsSnapshotService: AnalyticsSnapshotService,
     private _brandProfileService: BrandProfileService,
     private _brandContextService: BrandContextService,
+    private _bestTimeService: BestTimeService,
     private _mediaService: MediaService
   ) {}
 
@@ -148,5 +151,49 @@ export class InsightsController {
       org.id,
       limit ? +limit : undefined
     );
+  }
+
+  // Pillar C / #3 — best-time: ranked weekday x time-band slots from the store's
+  // own snapshots (fallback ladder when sparse). Read-only; never mutates the
+  // scheduler. 'apply'/'revert' opt-in + reversibly write Integration.postingTimes.
+  @Get('/best-times/:integrationId')
+  async bestTimes(
+    @GetOrgFromRequest() org: Organization,
+    @Param('integrationId') integrationId: string,
+    @Query('tz') tz?: string
+  ) {
+    this._assertEnabled();
+    const result = await this._bestTimeService.bestTimes(
+      org.id,
+      integrationId,
+      tz || undefined
+    );
+    if (!result) {
+      throw new NotFoundException();
+    }
+    return result;
+  }
+
+  @Put('/best-times/:integrationId/apply')
+  async applyBestTimes(
+    @GetOrgFromRequest() org: Organization,
+    @Param('integrationId') integrationId: string,
+    @Body('count') count?: number
+  ) {
+    this._assertEnabled();
+    return this._bestTimeService.applySuggestedTimes(
+      org.id,
+      integrationId,
+      count ? +count : undefined
+    );
+  }
+
+  @Post('/best-times/:integrationId/revert')
+  async revertBestTimes(
+    @GetOrgFromRequest() org: Organization,
+    @Param('integrationId') integrationId: string
+  ) {
+    this._assertEnabled();
+    return this._bestTimeService.revertSuggestedTimes(org.id, integrationId);
   }
 }

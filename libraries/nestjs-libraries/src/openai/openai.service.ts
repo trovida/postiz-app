@@ -175,6 +175,45 @@ Clips must not overlap. Write the title and the post in this language, whatever 
     }
   }
 
+  // Classify a retailer's post TEXT into one content theme (the fallback for
+  // the coverage insight when a post has no analyzed image). Reuses the same
+  // 12-type taxonomy, which doubles as a content vocabulary (a sale = signage_
+  // promo, a staff intro = people_staff, an event = event). Returns null when
+  // there's no usable text or the output can't be parsed.
+  async classifyTextTheme(text: string): Promise<string | null> {
+    const clean = (text || '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 2000);
+    if (!clean) {
+      return null;
+    }
+    const schema = z.object({
+      category: z.enum(SHOT_TYPES as unknown as [string, ...string[]]),
+    });
+    const r = await parseStructured(
+      {
+        model: 'gpt-4.1',
+        messages: [
+          {
+            role: 'system',
+            content:
+              `Classify a retailer's social-media post text into the single best content theme, one of: ${SHOT_TYPES.join(
+                ', '
+              )}. ` +
+              `These categories double as content themes — e.g. a sale/discount announcement = signage_promo, a staff or owner intro = people_staff, an event = event, a product highlight = product_closeup or product_styled. Use "other" if none clearly fits.`,
+          },
+          { role: 'user', content: clean },
+        ],
+      },
+      schema,
+      'post_theme',
+      { timeout: 20_000, maxRetries: 1 }
+    );
+    return (r?.category as string) ?? null;
+  }
+
   // Image UNDERSTANDING: look at an uploaded photo and write a ready-to-post
   // caption about what it actually shows. `image` is a base64 data URI (the
   // caller inlines the bytes so the vision host never has to fetch our URL).

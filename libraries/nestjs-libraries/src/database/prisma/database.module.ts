@@ -52,6 +52,7 @@ import { AdminStatsRepository } from '@gitroom/nestjs-libraries/database/prisma/
 import { AdminStatsService } from '@gitroom/nestjs-libraries/database/prisma/admin-stats/admin-stats.service';
 import { InsightSummaryService } from '@gitroom/nestjs-libraries/database/prisma/insights/insight-summary.service';
 import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insights/cadence.service';
+import { CoverageService } from '@gitroom/nestjs-libraries/database/prisma/insights/coverage.service';
 
 @Global()
 @Module({
@@ -113,6 +114,7 @@ import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insigh
     AdminStatsService,
     InsightSummaryService,
     CadenceService,
+    CoverageService,
   ],
   get exports() {
     return this.providers;

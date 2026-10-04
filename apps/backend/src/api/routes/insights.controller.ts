@@ -1,8 +1,16 @@
-import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { Organization } from '@prisma/client';
 import { GetOrgFromRequest } from '@gitroom/nestjs-libraries/user/org.from.request';
 import { ApiTags } from '@nestjs/swagger';
 import { CadenceService } from '@gitroom/nestjs-libraries/database/prisma/insights/cadence.service';
+import { CoverageService } from '@gitroom/nestjs-libraries/database/prisma/insights/coverage.service';
 import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
 
 // The Insights layer — interpretation over the store's own data (distinct from
@@ -14,6 +22,7 @@ import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/me
 export class InsightsController {
   constructor(
     private _cadenceService: CadenceService,
+    private _coverageService: CoverageService,
     private _mediaService: MediaService
   ) {}
 
@@ -47,5 +56,31 @@ export class InsightsController {
   async audit(@GetOrgFromRequest() org: Organization) {
     this._assertEnabled();
     return this._mediaService.contentAudit(org.id);
+  }
+
+  // Pillar B2 — coverage: theme x channel mix of what was published, gaps, and
+  // days-since-last per theme. Progressive (returns themed-so-far + a pending
+  // count; call the backfill to classify the rest).
+  @Get('/coverage')
+  async coverage(
+    @GetOrgFromRequest() org: Organization,
+    @Query('days') days?: string
+  ) {
+    this._assertEnabled();
+    return this._coverageService.coverage(org.id, days ? +days : undefined);
+  }
+
+  @Post('/coverage/backfill')
+  async coverageBackfill(
+    @GetOrgFromRequest() org: Organization,
+    @Body('limit') limit?: number,
+    @Body('days') days?: number
+  ) {
+    this._assertEnabled();
+    return this._coverageService.backfillThemes(
+      org.id,
+      limit ? +limit : undefined,
+      days ? +days : undefined
+    );
   }
 }

@@ -27,6 +27,15 @@ export class InsightSummaryService {
     kind: InsightKind,
     facts: Record<string, any>
   ): Promise<{ headline: string; bullets: string[] } | null> {
+    // So the narrator uses the right noun — a library audit is about PHOTOS,
+    // not posts; cadence is about posts over time; etc.
+    const subjectByKind: Record<InsightKind, string> = {
+      content: "the retailer's photo/media library — these are PHOTOS, call them photos or images, never \"posts\"",
+      cadence: "the retailer's posting history — posts published over time",
+      coverage: "the retailer's published posts grouped by content theme",
+      besttime: "how the retailer's past posts performed by time of day/week",
+      brand: "the retailer's brand voice and past posts",
+    };
     try {
       const result = await parseStructured(
         {
@@ -35,13 +44,13 @@ export class InsightSummaryService {
             {
               role: 'system',
               content: `You turn pre-computed social-media analytics for a single brick-and-mortar retailer into a short, plain-English read for the shop owner.
+These facts describe ${subjectByKind[kind]}. Use the correct noun for the subject.
 Hard rules:
 - Use ONLY numbers that appear in the provided JSON facts. NEVER invent, estimate, extrapolate, or introduce any figure not present in the facts.
 - Talk to the owner directly — warm, concrete, like a helpful shop assistant, not a dashboard.
 - No guilt or shame, no hype, no comparisons to other businesses.
 - "headline": exactly one sentence. "bullets": 2-4 short, specific, actionable observations, each grounded in a fact above.
-- If the facts show little or no activity, say so plainly and encouragingly.
-Context kind: ${kind}.`,
+- If the facts show little or no activity, say so plainly and encouragingly.`,
             },
             {
               role: 'user',

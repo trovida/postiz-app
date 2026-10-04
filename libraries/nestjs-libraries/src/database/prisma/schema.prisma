@@ -454,6 +454,7 @@ model BrandProfile {
   bannedPhrases  Json?
   sampleCaptions Json?
   factsMarkdown  String?
+  openHours      Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -466,6 +467,7 @@ model BrandExemplar {
   category        String?
   content         String
   engagementScore Float?
+  embedding       Json?
   publishDate     DateTime
   createdAt       DateTime @default(now())
 

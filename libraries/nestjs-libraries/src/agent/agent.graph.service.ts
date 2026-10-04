@@ -154,7 +154,15 @@ export class AgentGraphService {
   // when the org has no brand data; never fatal.
   async loadBrand(state: WorkflowChannelsState) {
     try {
-      const brandContext = await this._brandContextService.build(state.orgId);
+      // Deferred #3: pass the user's generation ask as the retrieval query so
+      // the exemplars are the shop's past posts ABOUT this topic (semantic when
+      // embeddings are configured, lexical topic-overlap otherwise).
+      const query =
+        state.topic || String(state.messages?.[0]?.content ?? '') || undefined;
+      const brandContext = await this._brandContextService.build(
+        state.orgId,
+        query
+      );
       return brandContext ? { brandContext } : {};
     } catch {
       return {};

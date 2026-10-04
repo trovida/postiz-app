@@ -57,6 +57,7 @@ import { AnalyticsSnapshotService } from '@gitroom/nestjs-libraries/database/pri
 import { BrandProfileService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-profile.service';
 import { BrandContextService } from '@gitroom/nestjs-libraries/database/prisma/insights/brand-context.service';
 import { BestTimeService } from '@gitroom/nestjs-libraries/database/prisma/insights/best-time.service';
+import { PublishHookService } from '@gitroom/nestjs-libraries/database/prisma/insights/publish-hook.service';
 
 @Global()
 @Module({
@@ -123,6 +124,7 @@ import { BestTimeService } from '@gitroom/nestjs-libraries/database/prisma/insig
     BrandProfileService,
     BrandContextService,
     BestTimeService,
+    PublishHookService,
   ],
   get exports() {
     return this.providers;

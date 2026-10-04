@@ -18,6 +18,9 @@ export interface BrandProfileInput {
   bannedPhrases?: string[] | null;
   sampleCaptions?: string[] | null;
   factsMarkdown?: string | null;
+  // Deferred #4 — owner-set store open-hours (minutes-of-day) the best-time
+  // clamp respects. Send null to clear (falls back to env/default).
+  openHours?: { startMinutes: number; endMinutes: number } | null;
 }
 
 // Pillar D / #4 — the per-org brand profile + exemplar pool. Profile is

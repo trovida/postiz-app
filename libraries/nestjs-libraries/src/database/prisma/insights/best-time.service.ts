@@ -8,7 +8,11 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// Open-hours clamp (v1 default; real store hours from core-api are a follow-up).
+// Open-hours clamp default. Precedence (deferred #4): the org's owner-set
+// BrandProfile.openHours > the BEST_TIME_OPEN_{START,END}_MIN env override >
+// this 08:00-21:00 default. (Auto-populating from Trovida core-api would need a
+// core-api reverse-lookup endpoint by postiz_org_id + a box->core-api path;
+// owner-set hours deliver the same clamp value without that cross-system plumbing.)
 const OPEN_START = 8 * 60; // 08:00
 const OPEN_END = 21 * 60; // 21:00
 
@@ -52,8 +56,39 @@ export class BestTimeService {
     private _post: PrismaRepository<'post'>,
     private _integration: PrismaRepository<'integration'>,
     private _snapshot: PrismaRepository<'postMetricsSnapshot'>,
+    private _brandProfile: PrismaRepository<'brandProfile'>,
     private _insightSummary: InsightSummaryService
   ) {}
+
+  // Deferred #4 — resolve the open-hours window: owner-set BrandProfile.openHours
+  // (sane, start<end) > env override > 08:00-21:00 default. Fail-soft.
+  private async _openWindow(orgId: string): Promise<{ start: number; end: number }> {
+    const envStart = parseInt(process.env.BEST_TIME_OPEN_START_MIN || '', 10);
+    const envEnd = parseInt(process.env.BEST_TIME_OPEN_END_MIN || '', 10);
+    let start = Number.isFinite(envStart) ? envStart : OPEN_START;
+    let end = Number.isFinite(envEnd) ? envEnd : OPEN_END;
+    try {
+      const bp = await this._brandProfile.model.brandProfile.findUnique({
+        where: { organizationId: orgId },
+        select: { openHours: true },
+      });
+      const oh = bp?.openHours as
+        | { startMinutes?: number; endMinutes?: number }
+        | null;
+      if (
+        oh &&
+        Number.isFinite(oh.startMinutes) &&
+        Number.isFinite(oh.endMinutes) &&
+        (oh.endMinutes as number) > (oh.startMinutes as number)
+      ) {
+        start = oh.startMinutes as number;
+        end = oh.endMinutes as number;
+      }
+    } catch {
+      /* fall back to env/default */
+    }
+    return { start, end };
+  }
 
   private _band(minutes: number) {
     return Math.floor(minutes / 120) * 120; // 2-hour band start
@@ -154,11 +189,13 @@ export class BestTimeService {
       cells = this._defaultCells(integration.providerIdentifier);
     }
 
-    // open-hours clamp (fall back to clamped defaults if nothing survives)
-    cells = cells.filter((c) => c.minutes >= OPEN_START && c.minutes < OPEN_END);
+    // open-hours clamp (owner-set > env > default; fall back to clamped
+    // defaults if nothing survives)
+    const { start: openStart, end: openEnd } = await this._openWindow(orgId);
+    cells = cells.filter((c) => c.minutes >= openStart && c.minutes < openEnd);
     if (!cells.length) {
       cells = this._defaultCells(integration.providerIdentifier).filter(
-        (c) => c.minutes >= OPEN_START && c.minutes < OPEN_END
+        (c) => c.minutes >= openStart && c.minutes < openEnd
       );
     }
 
@@ -169,7 +206,7 @@ export class BestTimeService {
       timezone: tz,
       source: topTimes[0]?.source ?? source,
       scoredPosts: postIds.length,
-      openHours: { startMinutes: OPEN_START, endMinutes: OPEN_END },
+      openHours: { startMinutes: openStart, endMinutes: openEnd },
       topTimes,
     };
     const narrative = await this._insightSummary.summarize('besttime', facts);

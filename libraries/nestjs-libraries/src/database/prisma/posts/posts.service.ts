@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
   ValidationPipe,
 } from '@nestjs/common';
 import { PostsRepository } from '@gitroom/nestjs-libraries/database/prisma/posts/posts.repository';
+import { PublishHookService } from '@gitroom/nestjs-libraries/database/prisma/insights/publish-hook.service';
 import { CreatePostDto } from '@gitroom/nestjs-libraries/dtos/posts/create.post.dto';
 import dayjs from 'dayjs';
 import { IntegrationManager } from '@gitroom/nestjs-libraries/integrations/integration.manager';
@@ -73,15 +75,22 @@ export class PostsService {
     private _shortLinkService: ShortLinkService,
     private _openaiService: OpenaiService,
     private _temporalService: TemporalService,
-    private _refreshIntegrationService: RefreshIntegrationService
+    private _refreshIntegrationService: RefreshIntegrationService,
+    @Optional() private _publishHook?: PublishHookService
   ) {}
 
   searchForMissingThreeHoursPosts() {
     return this._postRepository.searchForMissingThreeHoursPosts();
   }
 
-  updatePost(id: string, postId: string, releaseURL: string) {
-    return this._postRepository.updatePost(id, postId, releaseURL);
+  async updatePost(id: string, postId: string, releaseURL: string) {
+    const result = await this._postRepository.updatePost(id, postId, releaseURL);
+    // Deferred #1 — on-publish auto-hook (theme-classify + exemplar upsert).
+    // Fire-and-forget + fail-soft + ENABLE_INSIGHTS-gated inside the service, so
+    // a publish is never delayed or affected. Optional dep: a deployment without
+    // the insights wiring simply skips it.
+    void this._publishHook?.onPublished(id);
+    return result;
   }
 
   async getMissingContent(

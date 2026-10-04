@@ -11,6 +11,8 @@ import {
   visionModel,
   aiImageEnabled,
   aiVisionEnabled,
+  aiEmbeddingsEnabled,
+  getEmbeddingsConfig,
   parseStructured,
 } from '@gitroom/nestjs-libraries/openai/ai.provider';
 
@@ -268,6 +270,50 @@ Base everything ONLY on the posts provided — never invent facts, products, or 
         factsMarkdown: string;
       } | null) ?? null
     );
+  }
+
+  // Deferred #3 — embed texts via an OpenAI-compatible /embeddings endpoint
+  // (e.g. BGE-M3 behind a wrapper). Returns one vector per input, null for any
+  // that fail; all-null when embeddings aren't configured. Fully fail-soft — a
+  // retrieval helper must never throw into generation. Raw fetch (the embeddings
+  // host is often a different provider than the chat host).
+  async embedTexts(texts: string[]): Promise<(number[] | null)[]> {
+    if (!aiEmbeddingsEnabled() || !texts.length) {
+      return texts.map(() => null);
+    }
+    const { apiKey, baseURL, model } = getEmbeddingsConfig();
+    const input = texts.map((t) => (t || '').slice(0, 2000));
+    try {
+      const res = await fetch(`${baseURL.replace(/\/$/, '')}/embeddings`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ model, input }),
+      });
+      if (!res.ok) {
+        return texts.map(() => null);
+      }
+      const json = (await res.json()) as {
+        data?: { embedding?: number[] }[];
+      };
+      const data = json?.data;
+      if (!Array.isArray(data)) {
+        return texts.map(() => null);
+      }
+      return input.map((_, i) => {
+        const e = data[i]?.embedding;
+        return Array.isArray(e) ? (e as number[]) : null;
+      });
+    } catch {
+      return texts.map(() => null);
+    }
+  }
+
+  async embedText(text: string): Promise<number[] | null> {
+    const [v] = await this.embedTexts([text]);
+    return v ?? null;
   }
 
   // Image UNDERSTANDING: look at an uploaded photo and write a ready-to-post

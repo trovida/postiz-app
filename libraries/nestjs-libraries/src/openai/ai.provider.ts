@@ -58,6 +58,24 @@ const VISION_BASE =
 const VISION_MODEL =
   env.AI_VISION_MODEL || (PLAIN_OPENAI ? env.AI_TEXT_MODEL || 'gpt-4o-mini' : '');
 
+// EMBEDDINGS slot (deferred #3 — semantic brand-voice retrieval). OFF by
+// default and deliberate: DeepSeek has no embeddings API, so the semantic path
+// activates ONLY when all three AI_EMBED_* are set (any OpenAI-compatible
+// /embeddings endpoint — e.g. Trovida's BGE-M3 behind an OpenAI-compatible
+// wrapper, or an embeddings provider). No fallback to the text host (it usually
+// can't embed), so turning this on must be explicit. When unset, brand-voice
+// retrieval stays on the lexical topic-overlap / engagement-recency ladder.
+const EMBED_KEY = env.AI_EMBED_API_KEY || '';
+const EMBED_BASE = env.AI_EMBED_BASE_URL || '';
+const EMBED_MODEL = env.AI_EMBED_MODEL || '';
+export const aiEmbeddingsEnabled = () =>
+  !!EMBED_KEY && !!EMBED_BASE && !!EMBED_MODEL;
+export const getEmbeddingsConfig = () => ({
+  apiKey: EMBED_KEY,
+  baseURL: EMBED_BASE,
+  model: EMBED_MODEL,
+});
+
 /** Is text/agent generation configured? */
 export const aiTextEnabled = () => !!TEXT_KEY;
 /** Is image generation configured? (DeepSeek has no image model, so this is

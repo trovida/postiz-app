@@ -18,8 +18,58 @@ export class AnalyticsSnapshotService {
     private _post: PrismaRepository<'post'>,
     private _organization: PrismaRepository<'organization'>,
     private _snapshot: PrismaRepository<'postMetricsSnapshot'>,
+    private _brandExemplar: PrismaRepository<'brandExemplar'>,
     private _postsService: PostsService
   ) {}
+
+  // Deferred item #2 — engagement-rank the brand exemplar pool from the latest
+  // snapshot per post, so the brand copilot (#4) learns from what actually
+  // performed, not just recency. BrandContextService already orders exemplars by
+  // engagementScore desc (nulls last), so populating it flips the ranking
+  // automatically. Prefers engagementRate (reach-normalized, fair across posts)
+  // and falls back to the raw engagementScore. Fail-soft.
+  private async _syncExemplarScores(orgId: string): Promise<number> {
+    const exemplars = await this._brandExemplar.model.brandExemplar.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, postId: true },
+    });
+    if (!exemplars.length) {
+      return 0;
+    }
+    const postIds = exemplars.map((e) => e.postId);
+    const snaps = await this._snapshot.model.postMetricsSnapshot.findMany({
+      where: { organizationId: orgId, postId: { in: postIds } },
+      select: {
+        postId: true,
+        engagementScore: true,
+        engagementRate: true,
+        reach: true,
+        capturedAt: true,
+      },
+      orderBy: { capturedAt: 'desc' },
+    });
+    const latest = new Map<string, (typeof snaps)[number]>();
+    for (const s of snaps) {
+      if (!latest.has(s.postId)) latest.set(s.postId, s);
+    }
+    let updated = 0;
+    for (const e of exemplars) {
+      const s = latest.get(e.postId);
+      if (!s) {
+        continue;
+      }
+      const score =
+        s.reach && s.engagementRate != null
+          ? s.engagementRate
+          : s.engagementScore;
+      await this._brandExemplar.model.brandExemplar.update({
+        where: { id: e.id },
+        data: { engagementScore: score },
+      });
+      updated++;
+    }
+    return updated;
+  }
 
   // AnalyticsData.total is a STRING; map labels to typed metrics by substring
   // (providers title them "Likes" / "Total Likes" / etc.), keep the raw map too.
@@ -153,7 +203,19 @@ export class AnalyticsSnapshotService {
         /* a provider/token failure on one post must not fail the batch */
       }
     }
-    return { posts: posts.length, snapshotted };
+    // Deferred #2: flip the exemplar pool to engagement-ranked once fresh
+    // metrics exist (fail-soft — never fail the snapshot batch for it).
+    let exemplarsScored = 0;
+    try {
+      exemplarsScored = await this._syncExemplarScores(orgId);
+    } catch (e) {
+      this._logger.warn(
+        `exemplar score sync for org ${orgId} failed: ${
+          e instanceof Error ? e.message : String(e)
+        }`
+      );
+    }
+    return { posts: posts.length, snapshotted, exemplarsScored };
   }
 
   // The daily job: recent posts across all orgs. Bounded + fail-soft per org.

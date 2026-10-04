@@ -74,6 +74,11 @@ ${
     ? `        - Look at a photo the user uploaded and write a caption about what's actually in it (describeImageTool). When the user's message contains an uploaded image (its URL is inside a "[--Media--]Image: <url>[--Media--]" marker) and they ask for a caption for it or ask what's in it, call describeImageTool with that exact URL first, then write the caption yourself in the right voice and platform format.`
     : ''
 }
+${
+  process.env.ENABLE_INSIGHTS === 'true'
+    ? `        - Answer questions about the store's OWN performance, content, photo library and brand voice with insightsTool (ONE tool — pick a "kind": cadence, coverage, audit, mediaSearch, bestTime, or brand). Use it when the user asks how they're doing, how consistent they've been, when to post, what's in their photo library (or to find photos by content), what themes they post about, or about their brand voice. Prefer the result's "narrative" when summarizing; never invent numbers that aren't in the result.`
+    : ''
+}
         - Show global analytics about socials
         - List integrations (channels)
         - List groups (customers) and filter the channels by a group

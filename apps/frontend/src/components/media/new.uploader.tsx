@@ -12,6 +12,8 @@ import { Dashboard, FileInput, ProgressBar } from '@uppy/react';
 // Uppy styles
 import { useVariables } from '@gitroom/react/helpers/variable.context';
 import Compressor from '@uppy/compressor';
+// @ts-ignore
+import Webcam from '@uppy/webcam';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { useToaster } from '@gitroom/react/toaster/toaster';
 import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
@@ -76,6 +78,13 @@ export function useUppyUploader(props: {
         maxFileSize: 1000000000, // Default 1GB, but we'll override with custom validation
       },
     });
+
+    // "Take a photo" source (surfaced via a Camera button → DashboardModal in
+    // media.component). Captures a JPEG straight from the device camera, so it
+    // flows through the same compression/upload pipeline as any image. The
+    // collapsed inline Dashboard passes plugins={[]} so this tab never shows
+    // there — only the camera modal references it.
+    uppy2.use(Webcam, { modes: ['picture'], mirror: true });
 
     // check for valid file types it can be something like this image/*,video/mp4.
     // If it's an image, I need to replace image/* with image/png, image/jpeg, image/jpeg, image/gif (separately)

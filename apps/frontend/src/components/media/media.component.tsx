@@ -35,7 +35,7 @@ import { MediaComponentInner } from '@gitroom/frontend/components/launches/helpe
 import { AiVideo } from '@gitroom/frontend/components/launches/ai.video';
 import { useModals } from '@gitroom/frontend/components/layout/new-modal';
 import { ThirdPartyMediaLibrary } from '@gitroom/frontend/components/third-parties/third-party.media-library';
-import { Dashboard } from '@uppy/react';
+import { Dashboard, DashboardModal } from '@uppy/react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -233,6 +233,7 @@ export const MediaBox: FC<{
   const uploaderRef = useRef<any>(null);
   const mediaDirectory = useMediaDirectory();
   const [loading, setLoading] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const uppy = useUppyUploader({
     allowedFileTypes:
@@ -445,15 +446,39 @@ export const MediaBox: FC<{
           />
           <div className="flex gap-[8px]">
             {btn}
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => setCameraOpen(true)}
+              title={t('take_a_photo', 'Take a photo')}
+              className="relative cursor-pointer bg-btnSimple changeColor flex gap-[8px] h-[44px] px-[18px] justify-center items-center rounded-[8px]"
+            >
+              <span aria-hidden>📷</span>
+              <div>{t('camera', 'Camera')}</div>
+            </button>
             <ThirdPartyMediaLibrary onImported={() => mutate()} />
           </div>
         </div>
+        {/* Take-a-photo source — a sibling of the (conditionally-hidden) header
+            so the modal always renders. Surfaces only the Webcam plugin;
+            captured JPEGs flow through the same upload pipeline and land in the
+            library. */}
+        <DashboardModal
+          uppy={uppy}
+          id="camera"
+          open={cameraOpen}
+          onRequestClose={() => setCameraOpen(false)}
+          plugins={['Webcam']}
+          closeModalOnClickOutside={true}
+          proudlyDisplayPoweredByUppy={false}
+        />
         <div className="w-full pointer-events-none relative mt-[5px] mb-[5px]">
           <div className="w-full h-[46px] overflow-hidden absolute left-0 bg-newBgColorInner uppyChange">
             <Dashboard
               height={46}
               uppy={uppy}
               id={`uploader`}
+              plugins={[]}
               showProgressDetails={true}
               hideUploadButton={true}
               hideRetryButton={true}

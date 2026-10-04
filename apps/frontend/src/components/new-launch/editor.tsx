@@ -738,6 +738,7 @@ export const Editor: FC<{
                   height={46}
                   uppy={uppy}
                   id={`prog-${num}`}
+                  plugins={[]}
                   showProgressDetails={true}
                   hideUploadButton={true}
                   hideRetryButton={true}

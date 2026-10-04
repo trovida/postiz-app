@@ -2,6 +2,7 @@
 @use './polonto.css';
 @use '@uppy/core/dist/style.css' as uppyCore;
 @use '@uppy/dashboard/dist/style.css' as uppyDashboard;
+@use '@uppy/webcam/dist/style.css' as uppyWebcam;
 
 @tailwind base;
 @tailwind components;

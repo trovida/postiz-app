@@ -223,6 +223,7 @@ export const Plug = () => {
   const plug = usePlugs();
   const modals = useModals();
   const fetch = useFetch();
+  const t = useT();
   const load = useCallback(async () => {
     return (await fetch(`/integrations/${plug.providerId}/plugs`)).json();
   }, [plug.providerId]);
@@ -243,7 +244,9 @@ export const Plug = () => {
             mutate();
           },
           size: '500px',
-          title: `Auto Plug: ${p.title}`,
+          title: t('top_title_auto_plug', 'Automation: {{title}}', {
+            title: p.title,
+          }),
           children: (
             <PlugPop
               plug={p}
@@ -257,7 +260,7 @@ export const Plug = () => {
           ),
         });
       },
-    [data]
+    [data, t]
   );
   if (isLoading) {
     return null;

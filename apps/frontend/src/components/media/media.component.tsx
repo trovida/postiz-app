@@ -53,8 +53,10 @@ import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
 import { useShallow } from 'zustand/react/shallow';
 import { LoadingComponent } from '@gitroom/frontend/components/layout/loading';
 import { useDebounce } from 'use-debounce';
+// Design Media editor: vendored Apache-2.0 Fabric.js editor (replaces Polotno).
+// Polotno files are kept in place as a reversible fallback until verified live.
 const Polonto = dynamic(
-  () => import('@gitroom/frontend/components/launches/polonto')
+  () => import('@gitroom/frontend/components/launches/fabric-editor')
 );
 const showModalEmitter = new EventEmitter();
 export const Pagination: FC<{

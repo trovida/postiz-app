@@ -208,6 +208,7 @@ export interface Editor {
   saveJpg: () => void;
   saveSvg: () => void;
   saveJson: () => void;
+  exportToBlob: () => Promise<Blob>;
   loadJson: (json: string) => void;
   onUndo: () => void;
   onRedo: () => void;

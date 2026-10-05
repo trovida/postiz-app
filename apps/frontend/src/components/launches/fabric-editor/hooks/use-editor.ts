@@ -109,6 +109,19 @@ const buildEditor = ({
     downloadFile(fileString, "json");
   };
 
+  // Postiz seam: render the "clip" artboard to a PNG Blob (no download).
+  // Mirrors savePng but returns the blob so the wrapper can upload it.
+  const exportToBlob = async (): Promise<Blob> => {
+    const options = generateSaveOptions();
+
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+    const dataUrl = canvas.toDataURL(options);
+    autoZoom();
+
+    const response = await fetch(dataUrl);
+    return await response.blob();
+  };
+
   const loadJson = (json: string) => {
     const data = JSON.parse(json);
 
@@ -144,6 +157,7 @@ const buildEditor = ({
     saveJpg,
     saveSvg,
     saveJson,
+    exportToBlob,
     loadJson,
     canUndo,
     canRedo,

@@ -580,7 +580,6 @@
   "total_forks": "Total Forks",
   "continue_with": "Continue With",
   "email_address": "Email Address",
-  "label_company": "Company",
   "email_already_exists": "Email already exists",
   "google": "Google",
   "apple": "Apple",
@@ -621,7 +620,6 @@
   "add_provider_title": "Add Provider",
   "profile_updated": "Profile updated",
   "sets": "Sets",
-  "email_address": "Email Address",
   "invitation_link_sent": "Invitation link sent",
   "send_invitation_link": "Send Invitation Link",
   "copy_link": "Copy Link",
@@ -792,5 +790,14 @@
   "preview_comment_failed": "Could not post the comment",
   "preview_comment_detach_hint": "Comments on selected text lose their highlight if the text is edited later.",
   "preview_comment_text_changed": "Text changed",
-  "preview_no_comments_yet": "No comments yet. Select some text in the post to comment on it, or add a general comment."
+  "preview_no_comments_yet": "No comments yet. Select some text in the post to comment on it, or add a general comment.",
+  "all": "All",
+  "scheduled": "Scheduled",
+  "published": "Published",
+  "search": "Search",
+  "no_posts": "No posts",
+  "no_upcoming_posts": "No upcoming posts scheduled",
+  "no_draft_posts": "No draft posts",
+  "no_published_posts": "No published posts",
+  "page_x_of_y": "Page {{current}} of {{total}}"
 }

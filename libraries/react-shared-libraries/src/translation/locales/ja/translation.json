@@ -70,7 +70,7 @@
   "onboarding": "オンボーディング",
   "next": "次へ",
   "you_are_done_from_here_you_can": "完了しました。ここから次のことができます：",
-  "view_analytics": "分析情報を見る",
+  "view_analytics": "分析を表示",
   "schedule_a_new_post": "新しい投稿を予約する",
   "to_sell_posts_you_would_have_to": "投稿を販売するには、次のことが必要です：",
   "1_connect_at_least_one_channel": "1. 少なくとも1つのチャンネルを接続する",
@@ -790,5 +790,14 @@
   "preview_comment_failed": "コメントの投稿に失敗しました",
   "preview_comment_detach_hint": "選択テキストへのコメントは、テキストが後から編集されるとハイライトが失われます。",
   "preview_comment_text_changed": "テキストが変更されました",
-  "preview_no_comments_yet": "まだコメントはありません。投稿内のテキストを選択してコメントするか、一般的なコメントを追加してください。"
+  "preview_no_comments_yet": "まだコメントはありません。投稿内のテキストを選択してコメントするか、一般的なコメントを追加してください。",
+  "all": "すべて",
+  "scheduled": "予約済み",
+  "published": "公開済み",
+  "search": "検索",
+  "no_posts": "投稿がありません",
+  "no_upcoming_posts": "予約された投稿はありません",
+  "no_draft_posts": "下書きはありません",
+  "no_published_posts": "公開済みの投稿はありません",
+  "page_x_of_y": "{{current}} / {{total}} ページ"
 }

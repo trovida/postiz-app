@@ -70,7 +70,7 @@
   "onboarding": "Onboarding",
   "next": "Avanti",
   "you_are_done_from_here_you_can": "Hai finito, da qui puoi:",
-  "view_analytics": "Visualizza Analisi",
+  "view_analytics": "Visualizza statistiche",
   "schedule_a_new_post": "Programma un nuovo post",
   "to_sell_posts_you_would_have_to": "Per vendere post dovresti:",
   "1_connect_at_least_one_channel": "1. Collegare almeno un canale",
@@ -790,5 +790,14 @@
   "preview_comment_failed": "Impossibile pubblicare il commento",
   "preview_comment_detach_hint": "I commenti su testo selezionato perdono l'evidenziazione se il testo viene modificato successivamente.",
   "preview_comment_text_changed": "Testo modificato",
-  "preview_no_comments_yet": "Nessun commento ancora. Seleziona del testo nel post per commentarlo, oppure aggiungi un commento generale."
+  "preview_no_comments_yet": "Nessun commento ancora. Seleziona del testo nel post per commentarlo, oppure aggiungi un commento generale.",
+  "all": "Tutti",
+  "scheduled": "Programmati",
+  "published": "Pubblicati",
+  "search": "Cerca",
+  "no_posts": "Nessun post",
+  "no_upcoming_posts": "Nessun post in programma",
+  "no_draft_posts": "Nessuna bozza",
+  "no_published_posts": "Nessun post pubblicato",
+  "page_x_of_y": "Pagina {{current}} di {{total}}"
 }

@@ -379,7 +379,10 @@ export const Filters = () => {
             </div>
             <div className="min-w-[200px] text-center bg-newBgColorInner h-full flex items-center justify-center">
               <div className="py-[3px] px-[9px] rounded-[5px] transition-all text-[14px]">
-                {t('page', 'Page')} {calendar.listPage + 1} {t('of', 'of')} {Math.max(1, calendar.listTotalPages)}
+                {t('page_x_of_y', 'Page {{current}} of {{total}}', {
+                  current: calendar.listPage + 1,
+                  total: Math.max(1, calendar.listTotalPages),
+                })}
               </div>
             </div>
             <div

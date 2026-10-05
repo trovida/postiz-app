@@ -70,7 +70,7 @@
   "onboarding": "Introducción",
   "next": "Siguiente",
   "you_are_done_from_here_you_can": "Has terminado, desde aquí puedes:",
-  "view_analytics": "Ver analíticas",
+  "view_analytics": "Ver estadísticas",
   "schedule_a_new_post": "Programar una nueva publicación",
   "to_sell_posts_you_would_have_to": "Para vender publicaciones debes:",
   "1_connect_at_least_one_channel": "1. Conectar al menos un canal",
@@ -790,5 +790,14 @@
   "preview_comment_failed": "No se pudo publicar el comentario",
   "preview_comment_detach_hint": "Los comentarios sobre texto seleccionado pierden su resalte si el texto se edita más tarde.",
   "preview_comment_text_changed": "Texto modificado",
-  "preview_no_comments_yet": "Aún no hay comentarios. Selecciona texto en la publicación para comentarlo o agrega un comentario general."
+  "preview_no_comments_yet": "Aún no hay comentarios. Selecciona texto en la publicación para comentarlo o agrega un comentario general.",
+  "all": "Todos",
+  "scheduled": "Programados",
+  "published": "Publicados",
+  "search": "Buscar",
+  "no_posts": "No hay publicaciones",
+  "no_upcoming_posts": "No hay publicaciones programadas",
+  "no_draft_posts": "No hay borradores",
+  "no_published_posts": "No hay publicaciones publicadas",
+  "page_x_of_y": "Página {{current}} de {{total}}"
 }

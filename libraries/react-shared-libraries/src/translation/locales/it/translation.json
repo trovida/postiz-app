@@ -715,7 +715,7 @@
   "agent_access_unavailable": "L'accesso agli agenti non è disponibile per il tuo attuale piano o ruolo. Puoi configurarlo più tardi in Impostazioni > Sviluppatori.",
   "sign_in_no_api_key": "Accedi con Postiz (nessuna API key)",
   "oauth_sign_in_hint": "Il tuo agente aprirà una finestra del browser per accedere a Postiz.",
-  "add_to_cursor": "Aggiungi al Cursor",
+  "add_to_cursor": "Aggiungi a Cursor",
   "cli": "CLI",
   "other_agents": "Altri agenti",
   "documentation": "Documentazione",

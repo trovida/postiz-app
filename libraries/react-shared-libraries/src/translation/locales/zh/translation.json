@@ -715,7 +715,7 @@
   "agent_access_unavailable": "你的当前套餐或角色无法使用代理访问。你可以稍后在 设置 > 开发者 中进行设置。",
   "sign_in_no_api_key": "使用 Postiz 登录（无需 API 密钥）",
   "oauth_sign_in_hint": "你的代理将会打开一个浏览器窗口用于登录 Postiz。",
-  "add_to_cursor": "添加到光标",
+  "add_to_cursor": "添加到Cursor",
   "cli": "CLI 命令行工具",
   "other_agents": "其他代理",
   "documentation": "文档",

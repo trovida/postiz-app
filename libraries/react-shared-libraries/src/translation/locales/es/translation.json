@@ -715,7 +715,7 @@
   "agent_access_unavailable": "El acceso del agente no está disponible para tu plan o rol actual. Puedes configurarlo más tarde en Configuración > Desarrolladores.",
   "sign_in_no_api_key": "Inicia sesión con Postiz (sin clave API)",
   "oauth_sign_in_hint": "Tu agente abrirá una ventana en el navegador para iniciar sesión en Postiz.",
-  "add_to_cursor": "Agregar al Cursor",
+  "add_to_cursor": "Agregar a Cursor",
   "cli": "CLI",
   "other_agents": "Otros agentes",
   "documentation": "Documentación",

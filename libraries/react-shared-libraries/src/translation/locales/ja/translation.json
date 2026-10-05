@@ -715,7 +715,7 @@
   "agent_access_unavailable": "現在のプランまたはロールではエージェントアクセスをご利用いただけません。設定 > 開発者 で後から設定することもできます。",
   "sign_in_no_api_key": "Postizでサインイン（APIキー不要）",
   "oauth_sign_in_hint": "エージェントがPostizにサインインするためのブラウザウィンドウを開きます。",
-  "add_to_cursor": "カーソルに追加",
+  "add_to_cursor": "Cursorに追加",
   "cli": "CLI",
   "other_agents": "その他のエージェント",
   "documentation": "ドキュメント",

@@ -2,26 +2,12 @@ import { RgbaColorPicker } from 'react-colorful';
 
 import { colors } from '../types';
 import { rgbaObjectToString } from '../utils';
+import { toRgba } from '../color.util';
 
 interface ColorPickerProps {
   value: string;
   onChange: (value: string) => void;
 }
-
-// Parse a CSS rgb/rgba string into react-colorful's {r,g,b,a}; falls back to black.
-const toRgba = (value: string) => {
-  const match = value?.match(/rgba?\(([^)]+)\)/i);
-  if (match) {
-    const [r, g, b, a] = match[1].split(',').map((n) => parseFloat(n.trim()));
-    return {
-      r: r || 0,
-      g: g || 0,
-      b: b || 0,
-      a: a === undefined ? 1 : a,
-    };
-  }
-  return { r: 0, g: 0, b: 0, a: 1 };
-};
 
 export const ColorPicker = ({ value, onChange }: ColorPickerProps) => {
   return (

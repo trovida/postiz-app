@@ -5,7 +5,7 @@ import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import { useMediaDirectory } from '@gitroom/react/helpers/use.media.directory';
 
 import { EditorCanvas } from './components/editor';
-import { Editor } from './types';
+import type { Editor } from './types';
 
 /**
  * Postiz "Design Media" editor — a vendored, Apache-2.0 Fabric.js editor

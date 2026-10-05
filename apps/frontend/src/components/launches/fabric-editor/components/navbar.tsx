@@ -2,6 +2,7 @@
 
 import { MousePointerClick, Redo2, Undo2 } from 'lucide-react';
 
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { ActiveTool, Editor } from '../types';
 import { cn } from '../lib/utils';
 import { Hint } from '../ui/hint';
@@ -21,6 +22,7 @@ export const Navbar = ({
   onChangeActiveTool,
   onUse,
 }: NavbarProps) => {
+  const t = useT();
   return (
     <nav className="w-full flex items-center p-4 h-[68px] gap-x-4 border-b">
       <div className="w-full flex items-center gap-x-1 h-full">
@@ -60,8 +62,9 @@ export const Navbar = ({
             size="sm"
             disabled={!editor}
             onClick={() => editor && onUse(editor)}
+            className="!bg-[#612bd3] !text-white !border-0 hover:!opacity-90 disabled:!opacity-50"
           >
-            Use this media
+            {t('use_this_media', 'Use this media')}
           </Button>
         </div>
       </div>

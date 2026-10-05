@@ -1,6 +1,7 @@
 import { ChangeEvent, useRef, useState } from 'react';
 import { Loader, Upload } from 'lucide-react';
 
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { ActiveTool, Editor } from '../types';
 import { ToolSidebarClose } from './tool-sidebar-close';
 import { ToolSidebarHeader } from './tool-sidebar-header';
@@ -21,6 +22,7 @@ export const ImageSidebar = ({
   onChangeActiveTool,
   uploadImage,
 }: ImageSidebarProps) => {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +48,10 @@ export const ImageSidebar = ({
         activeTool === 'images' ? 'visible' : 'hidden'
       )}
     >
-      <ToolSidebarHeader title="Images" description="Add images to your canvas" />
+      <ToolSidebarHeader
+        title={t('images', 'Images')}
+        description={t('add_images_to_canvas', 'Add images to your canvas')}
+      />
       <div className="p-4 border-b">
         <input
           ref={inputRef}
@@ -66,7 +71,7 @@ export const ImageSidebar = ({
           ) : (
             <>
               <Upload className="size-4 mr-2" />
-              Upload image
+              {t('upload_image', 'Upload image')}
             </>
           )}
         </Button>

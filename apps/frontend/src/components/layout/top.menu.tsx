@@ -34,7 +34,7 @@ export const useMenuItem = () => {
 
   const firstMenu = [
     {
-      name: isGeneral ? t('calendar', 'Calendar') : t('launches', 'Launches'),
+      name: t('calendar', 'Calendar'),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -55,7 +55,7 @@ export const useMenuItem = () => {
       path: '/launches',
     },
     {
-      name: 'Agent',
+      name: t('ai_assistant', 'AI Assistant'),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +94,7 @@ export const useMenuItem = () => {
       path: '/analytics',
     },
     {
-      name: t('media', 'Media'),
+      name: t('library', 'Library'),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +115,7 @@ export const useMenuItem = () => {
       path: '/media',
     },
     {
-      name: t('plugs', 'Plugs'),
+      name: t('automations', 'Automations'),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -136,7 +136,7 @@ export const useMenuItem = () => {
       path: '/plugs',
     },
     {
-      name: t('integrations', 'Integrations'),
+      name: t('apps', 'Apps'),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -160,7 +160,7 @@ export const useMenuItem = () => {
 
   const secondMenu = [
     {
-      name: t('UGC', 'UGC'),
+      name: t('ai_videos', 'AI Videos'),
       icon: (
         <svg
           fill="#c52e2e"

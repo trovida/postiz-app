@@ -382,7 +382,7 @@ export const Menu: FC<{
                 </svg>
               </div>
               <div className="text-[14px]">
-                {t('create_new_post', 'Create a new post')}
+                {t('create_new_post', 'Create Post')}
               </div>
             </div>
           )}

@@ -1,19 +1,17 @@
 export const fallbackLng = 'en';
+// Aligned with Trovida's 9 supported locales (en, es, fr, de, it, ja, zh, ko, ar).
+// Postiz ships more locale files (he, ru, pt, tr, vi, bn, ka_ge) but Trovida does
+// not serve them, so they are not offered in the language menu.
 export const languages = [
   fallbackLng,
-  'he',
-  'ru',
-  'zh',
-  'fr',
   'es',
-  'pt',
+  'fr',
   'de',
   'it',
   'ja',
+  'zh',
   'ko',
   'ar',
-  'tr',
-  'vi',
 ];
 
 export const defaultNS = 'translation';

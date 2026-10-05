@@ -20,7 +20,12 @@ i18next
     fallbackNS: defaultNS,
     defaultNS,
     detection: {
-      order: ['cookie', 'header'],
+      // querystring first so a Trovida hand-off (?lng=xx) wins, then the user's
+      // own choice (cookie), then the request header. caches:['cookie'] persists
+      // the resolved locale so the choice sticks across subsequent visits.
+      order: ['querystring', 'cookie', 'header'],
+      lookupQuerystring: 'lng',
+      caches: ['cookie'],
     },
     preload: runsOnServerSide ? languages : [],
   });

@@ -1,4 +1,4 @@
-import i18next from './i18next';
+import i18next, { i18nextReady } from './i18next';
 import { cookieName, fallbackLng, headerName, languages } from './i18n.config';
 
 // Server components share ONE i18next instance across every request, so its
@@ -19,6 +19,7 @@ async function requestLanguage(): Promise<string> {
 }
 
 export async function getT(ns?: string, options?: any) {
+  await i18nextReady;
   const lng = await requestLanguage();
   const namespace = Array.isArray(ns) ? ns[0] : ns;
   await i18next.loadLanguages(lng);

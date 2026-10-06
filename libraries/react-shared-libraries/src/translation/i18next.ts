@@ -5,7 +5,10 @@ import { initReactI18next } from 'react-i18next/initReactI18next';
 import { fallbackLng, languages, defaultNS } from './i18n.config';
 const runsOnServerSide = typeof window === 'undefined';
 
-i18next
+// init() is asynchronous (resources load through a dynamic import). Server code
+// must await this before translating, or the first request after boot renders
+// the English defaults.
+export const i18nextReady = i18next
   .use(initReactI18next)
   .use(LanguageDetector)
   .use(

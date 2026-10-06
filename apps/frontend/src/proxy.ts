@@ -17,12 +17,20 @@ export async function proxy(request: NextRequest) {
     request.cookies.get('auth') ||
     request.headers.get('auth') ||
     nextUrl.searchParams.get('loggedAuth');
-  const lng = request.cookies.has(cookieName)
-    ? acceptLanguage.get(request.cookies.get(cookieName).value)
-    : acceptLanguage.get(
-        request.headers.get('Accept-Language') ||
-          request.headers.get('accept-language')
-      );
+  // ?lng= is the Trovida hand-off (the locale the owner picked on Trovida). It
+  // must win over the cookie and be persisted, or server-rendered text uses a
+  // stale language on the very first visit. Only exact supported codes count.
+  const queryLng = nextUrl.searchParams.get('lng');
+  const handOffLng =
+    queryLng && languages.includes(queryLng) ? queryLng : undefined;
+  const lng =
+    handOffLng ||
+    (request.cookies.has(cookieName)
+      ? acceptLanguage.get(request.cookies.get(cookieName).value)
+      : acceptLanguage.get(
+          request.headers.get('Accept-Language') ||
+            request.headers.get('accept-language')
+        ));
 
   const requestHeaders = new Headers(request.headers);
   if (lng) {
@@ -37,6 +45,14 @@ export async function proxy(request: NextRequest) {
 
   if (lng) {
     topResponse.headers.set(cookieName, lng);
+  }
+  if (handOffLng) {
+    // Same cookie i18next-browser-languagedetector reads and writes.
+    topResponse.cookies.set(cookieName, handOffLng, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    });
   }
 
   if (nextUrl.pathname.startsWith('/modal/') && !authCookie) {

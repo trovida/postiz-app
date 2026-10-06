@@ -96,7 +96,9 @@ export function Activate() {
             </div>
             {cooldown > 0 ? (
               <p className="text-sm text-textColor">
-                {t('resend_available_in', 'You can resend in')} {cooldown}s
+                {t('resend_available_in_seconds', 'You can resend in {{count}}s', {
+                  count: cooldown,
+                })}
               </p>
             ) : (
               <Button
@@ -138,7 +140,9 @@ export function Activate() {
                 disabled={cooldown > 0}
               >
                 {cooldown > 0
-                  ? `${t('resend_available_in', 'You can resend in')} ${cooldown}s`
+                  ? t('resend_available_in_seconds', 'You can resend in {{count}}s', {
+                      count: cooldown,
+                    })
                   : t('resend_activation_email', 'Resend Activation Email')}
               </Button>
             </form>

@@ -1,6 +1,7 @@
 'use client';
 
 import { withContinueProvider } from '../with-continue-provider';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface InstagramItem {
   id: string;
@@ -18,6 +19,22 @@ interface InstagramSelection {
   id: string;
   pageId: string;
 }
+
+const InstagramItemView = ({ item }: { item: InstagramItem }) => {
+  const t = useT();
+  return (
+    <>
+      <div>
+        <img
+          className="w-full max-w-[156px]"
+          src={item.picture.data.url}
+          alt={t('profile_picture_alt', 'profile')}
+        />
+      </div>
+      <div>{item.name}</div>
+    </>
+  );
+};
 
 export const InstagramContinue = withContinueProvider<
   InstagramItem,
@@ -45,16 +62,5 @@ export const InstagramContinue = withContinueProvider<
   getSelectionValue: (item) => ({ id: item.id, pageId: item.pageId }),
   transformSaveData: (selection) => selection,
   isSelected: (item, selection) => selection?.id === item.id,
-  renderItem: (item) => (
-    <>
-      <div>
-        <img
-          className="w-full max-w-[156px]"
-          src={item.picture.data.url}
-          alt="profile"
-        />
-      </div>
-      <div>{item.name}</div>
-    </>
-  ),
+  renderItem: (item) => <InstagramItemView item={item} />,
 });

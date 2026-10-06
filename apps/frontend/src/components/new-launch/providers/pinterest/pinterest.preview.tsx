@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { useIntegration } from '@gitroom/frontend/components/launches/helpers/use.integration';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { stripHtmlValidation } from '@gitroom/helpers/utils/strip.html.validation';
 import { textSlicer } from '@gitroom/helpers/utils/count.length';
 import { VideoOrImage } from '@gitroom/react/helpers/video.or.image';
@@ -9,6 +10,7 @@ export const PinterestPreview: FC<{
   maximumCharacters?: number;
 }> = (props) => {
   const { value: topValue, integration } = useIntegration();
+  const t = useT();
   const mediaDir = useMediaDirectory();
 
   const renderContent = topValue.map((p) => {
@@ -135,7 +137,7 @@ export const PinterestPreview: FC<{
           </div>
         </div>
         <div className="h-full flex rounded-[12px] text-[16px] font-[600] w-[100px] bg-[#E70024] text-white justify-center items-center">
-          Save
+          {t('save', 'Save')}
         </div>
       </div>
       <div

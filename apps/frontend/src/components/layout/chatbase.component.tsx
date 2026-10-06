@@ -7,12 +7,13 @@ declare global {
   }
 }
 
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { useVariables } from '@gitroom/react/helpers/variable.context';
 import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import { deleteDialog } from '@gitroom/react/helpers/delete.dialog';
 import useSWR from 'swr';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 export const ChatbaseComponent: FC = () => {
   const { isChatBase } = useVariables();
@@ -50,6 +51,11 @@ export const ChatbaseComponentLoad: FC = () => {
 
 const ChatBaseCode: FC<{ token: string }> = ({ token }) => {
   const fetch = useFetch();
+  const t = useT();
+  // Read through a ref: the effect below registers tools/scripts once and must
+  // not re-run (it would inject the chatbase script again) on a language change.
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     if (!window.chatbase || window.chatbase('getState') !== 'initialized') {
@@ -111,13 +117,18 @@ const ChatBaseCode: FC<{ token: string }> = ({ token }) => {
           }
 
           const approved = await deleteDialog(
-            `You are cancelling your ${
-              preview.tier || ''
-            } subscription and will receive a refund of ${preview.amount} ${(
-              preview.currency || ''
-            ).toUpperCase()}. Do you approve?`,
-            'Yes, cancel and refund',
-            'Cancel subscription'
+            tRef.current(
+              'chatbase_refund_confirm',
+              'You are cancelling your {{tier}} subscription and will receive a refund of {{amount}} {{currency}}. Do you approve?',
+              {
+                tier: preview.tier || '',
+                amount: preview.amount,
+                currency: (preview.currency || '').toUpperCase(),
+                interpolation: { escapeValue: false },
+              }
+            ),
+            tRef.current('yes_cancel_and_refund', 'Yes, cancel and refund'),
+            tRef.current('cancel_subscription_1', 'Cancel subscription')
           );
 
           if (!approved) {

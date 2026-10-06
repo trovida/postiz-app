@@ -1,6 +1,7 @@
 'use client';
 
 import { withContinueProvider } from '../with-continue-provider';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface FacebookItem {
   id: string;
@@ -12,6 +13,22 @@ interface FacebookItem {
     };
   };
 }
+
+const FacebookItemView = ({ item }: { item: FacebookItem }) => {
+  const t = useT();
+  return (
+    <>
+      <div>
+        <img
+          className="w-full"
+          src={item.picture.data.url}
+          alt={t('profile_picture_alt', 'profile')}
+        />
+      </div>
+      <div>{item.name}</div>
+    </>
+  );
+};
 
 export const FacebookContinue = withContinueProvider<FacebookItem, string>({
   endpoint: 'pages',
@@ -36,12 +53,5 @@ export const FacebookContinue = withContinueProvider<FacebookItem, string>({
   getSelectionValue: (item) => item.id,
   transformSaveData: (selection) => ({ page: selection }),
   isSelected: (item, selection) => selection === item.id,
-  renderItem: (item) => (
-    <>
-      <div>
-        <img className="w-full" src={item.picture.data.url} alt="profile" />
-      </div>
-      <div>{item.name}</div>
-    </>
-  ),
+  renderItem: (item) => <FacebookItemView item={item} />,
 });

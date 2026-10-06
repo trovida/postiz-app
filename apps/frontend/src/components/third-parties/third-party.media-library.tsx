@@ -85,8 +85,11 @@ const ThirdPartyMediaLibraryBrowser: FC<{
   return (
     <div className="flex flex-col gap-[16px] h-full">
       <div className="text-[14px] font-[600]">
-        {t('select_media_to_import', 'Select media to import from')}{' '}
-        {integration.title}: {integration.name}
+        {t(
+          'select_media_to_import_from',
+          'Select media to import from {{source}}: {{name}}',
+          { source: integration.title, name: integration.name }
+        )}
       </div>
       <div className="flex-1 relative">
         <div className="absolute left-0 top-0 w-full h-full overflow-x-hidden overflow-y-auto scrollbar scrollbar-thumb-newColColor scrollbar-track-newBgColorInner">

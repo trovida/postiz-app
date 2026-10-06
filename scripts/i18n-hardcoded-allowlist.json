@@ -1,0 +1,82 @@
+{
+  "files": {
+    "libraries/react-shared-libraries/src/helpers/testomonials.tsx": "attributed customer quotes — translating them would put words in real people's mouths"
+  },
+  "entries": [
+    {
+      "file": "apps/frontend/src/components/admin/admin-errors.component.tsx",
+      "text": "message",
+      "reason": "raw JSON field name of the debug payload shown below it"
+    },
+    {
+      "file": "apps/frontend/src/components/admin/admin-errors.component.tsx",
+      "text": "body",
+      "reason": "raw JSON field name of the debug payload shown below it"
+    },
+    {
+      "file": "apps/frontend/src/components/admin/admin-errors.component.tsx",
+      "text": "user@example.com",
+      "reason": "sample email format"
+    },
+    {
+      "file": "apps/frontend/src/components/billing/first.billing.component.tsx",
+      "text": "YouTube",
+      "reason": "brand name"
+    },
+    {
+      "file": "apps/frontend/src/components/developer/developer.component.tsx",
+      "text": "https://yourapp.com/callback",
+      "reason": "example URL"
+    },
+    {
+      "file": "apps/frontend/src/components/launches/fabric-editor/components/logo.tsx",
+      "text": "The Canvas",
+      "reason": "vendored editor product name (component unused)"
+    },
+    {
+      "file": "apps/frontend/src/components/launches/helpers/linkedin.component.tsx",
+      "text": "https://www.linkedin.com/company/gitroom",
+      "reason": "example URL"
+    },
+    {
+      "file": "apps/frontend/src/components/launches/web3/providers/moltbook.provider.tsx",
+      "text": "MyPostizAgent",
+      "reason": "sample agent identifier"
+    },
+    {
+      "file": "apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx",
+      "text": "https://example.com",
+      "reason": "example URL"
+    },
+    {
+      "file": "apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx",
+      "text": "SAVE20",
+      "reason": "sample coupon code"
+    },
+    {
+      "file": "apps/frontend/src/components/new-launch/providers/gmb/gmb.provider.tsx",
+      "text": "https://example.com/redeem",
+      "reason": "example URL"
+    },
+    {
+      "file": "apps/frontend/src/components/new-launch/providers/moltbook/moltbook.provider.tsx",
+      "text": "general",
+      "reason": "sample community identifier"
+    },
+    {
+      "file": "apps/frontend/src/components/new-launch/providers/reddit/subreddit.tsx",
+      "text": "/r/selfhosted",
+      "reason": "subreddit path"
+    },
+    {
+      "file": "apps/frontend/src/components/public-api/mcp.client.icons.tsx",
+      "text": "NanoClaw",
+      "reason": "product name"
+    },
+    {
+      "file": "apps/frontend/src/components/settings/github.component.tsx",
+      "text": "GitHub",
+      "reason": "brand name"
+    }
+  ]
+}

@@ -14,34 +14,42 @@ import clsx from 'clsx';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 const delayOptions = [
   {
+    key: 'delay_immediately',
     name: 'Immediately',
     value: 0,
   },
   {
+    key: 'delay_1_hour',
     name: '1 hour',
     value: 3600000,
   },
   {
+    key: 'delay_2_hours',
     name: '2 hours',
     value: 7200000,
   },
   {
+    key: 'delay_3_hours',
     name: '3 hours',
     value: 10800000,
   },
   {
+    key: 'delay_8_hours',
     name: '8 hours',
     value: 28800000,
   },
   {
+    key: 'delay_12_hours',
     name: '12 hours',
     value: 43200000,
   },
   {
+    key: 'delay_15_hours',
     name: '15 hours',
     value: 54000000,
   },
   {
+    key: 'delay_24_hours',
     name: '24 hours',
     value: 86400000,
   },
@@ -180,7 +188,7 @@ const Plug: FC<{
             >
               {delayOptions.map((p) => (
                 <option key={p.name} value={p.value}>
-                  {p.name}
+                  {t(p.key, p.name)}
                 </option>
               ))}
             </Select>

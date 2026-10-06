@@ -70,6 +70,7 @@ export const SelectCurrent: FC = () => {
     }))
   );
 
+  const t = useT();
   const contentRef = useRef<HTMLDivElement>(null);
   const hasScroll = useHasScroll(contentRef);
 
@@ -78,9 +79,11 @@ export const SelectCurrent: FC = () => {
       e.stopPropagation();
       e.preventDefault();
       const open = await modals.open({
-        title: 'Remove Social Account',
-        description:
-          'Are you sure you want to remove this social from scheduling?',
+        title: t('remove_social_account', 'Remove Social Account'),
+        description: t(
+          'are_you_sure_remove_social_from_scheduling',
+          'Are you sure you want to remove this social from scheduling?'
+        ),
       });
 
       if (!open) {
@@ -89,7 +92,7 @@ export const SelectCurrent: FC = () => {
 
       addOrRemoveSelectedIntegration(sIntegration, {});
     },
-    []
+    [t]
   );
 
   return (

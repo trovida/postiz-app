@@ -10,6 +10,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface SettingsSidebarProps {
   editor: Editor | undefined;
@@ -22,6 +23,7 @@ export const SettingsSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: SettingsSidebarProps) => {
+  const t = useT();
   const workspace = editor?.getWorkspace();
 
   const initialWidth = useMemo(() => `${workspace?.width ?? 0}`, [workspace]);
@@ -71,17 +73,17 @@ export const SettingsSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Settings"
-        description="Change the look of your workspace"
+        title={t('settings', 'Settings')}
+        description={t('editor_settings_description', 'Change the look of your workspace')}
       />
       <ScrollArea>
         <form className="space-y-4 p-4" onSubmit={onSubmit}>
           <div className="space-y-2">
             <Label>
-              Height
+              {t('editor_height', 'Height')}
             </Label>
             <Input
-              placeholder="Height"
+              placeholder={t('editor_height', 'Height')}
               value={height}
               type="number"
               onChange={(e) => changeHeight(e.target.value)}
@@ -89,17 +91,17 @@ export const SettingsSidebar = ({
           </div>
           <div className="space-y-2">
             <Label>
-              Width
+              {t('editor_width', 'Width')}
             </Label>
             <Input
-              placeholder="Width"
+              placeholder={t('editor_width', 'Width')}
               value={width}
               type="number"
               onChange={(e) => changeWidth(e.target.value)}
             />
           </div>
           <Button type="submit" className="w-full">
-            Resize
+            {t('editor_resize', 'Resize')}
           </Button>
         </form>
         <div className="p-4">

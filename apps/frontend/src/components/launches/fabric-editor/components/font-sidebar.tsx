@@ -9,6 +9,7 @@ import { ToolSidebarHeader } from "./tool-sidebar-header";
 import { cn } from "../lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface FontSidebarProps {
   editor: Editor | undefined;
@@ -21,6 +22,7 @@ export const FontSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: FontSidebarProps) => {
+  const t = useT();
   const value = editor?.getActiveFontFamily();
 
   const onClose = () => {
@@ -35,8 +37,8 @@ export const FontSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Font"
-        description="Change the text font"
+        title={t('editor_font', 'Font')}
+        description={t('editor_font_description', 'Change the text font')}
       />
       <ScrollArea>
         <div className="p-4 space-y-1 border-b">

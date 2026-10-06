@@ -22,6 +22,7 @@ export const ApiModal: FC<{
   const router = useRouter();
   const modal = useModals();
   const toaster = useToaster();
+  const t = useT();
   const [loading, setLoading] = useState(false);
   const closePopup = useCallback(() => {
     modal.closeAll();
@@ -49,7 +50,10 @@ export const ApiModal: FC<{
       });
 
       if (add.ok) {
-        toaster.show('Integration added successfully', 'success');
+        toaster.show(
+          t('integration_added_successfully', 'Integration added successfully'),
+          'success'
+        );
         if (closePopup) {
           closePopup();
         } else {
@@ -68,10 +72,8 @@ export const ApiModal: FC<{
 
       setLoading(false);
     },
-    [props]
+    [props, t]
   );
-
-  const t = useT();
 
   return (
     <div className="relative">
@@ -95,6 +97,7 @@ export const ApiModal: FC<{
 };
 
 export const ThirdPartyListComponent: FC<{ reload: () => void }> = (props) => {
+  const t = useT();
   const fetch = useFetch();
   const modals = useModals();
   const { reload } = props;
@@ -142,7 +145,7 @@ export const ThirdPartyListComponent: FC<{ reload: () => void }> = (props) => {
           <div className="whitespace-pre-wrap text-left text-lg">{p.title}</div>
           <div className="whitespace-pre-wrap text-left">{p.description}</div>
           <div className="w-full flex">
-            <Button className="w-full">Add</Button>
+            <Button className="w-full">{t('add', 'Add')}</Button>
           </div>
         </div>
       ))}

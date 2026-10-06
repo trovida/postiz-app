@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 // @ts-ignore
 import Uppy, { BasePlugin, UploadResult, UppyFile } from '@uppy/core';
 // @ts-ignore
@@ -57,6 +63,10 @@ export function useUppyUploader(props: {
   const setLocked = useLaunchStore((state) => state.setLocked);
   const toast = useToaster();
   const t = useT();
+  // The Uppy instance below is memoized once; read `t` through a ref so its
+  // messages follow language changes without recreating the uploader.
+  const tRef = useRef(t);
+  tRef.current = t;
   const {
     storageProvider,
     backendUrl,
@@ -157,7 +167,15 @@ export function useUppyUploader(props: {
               uppy2.log(error.message, 'error');
               uppy2.info(error.message, 'error', 5000);
               toast.show(
-                `File type "${fileType}" is not allowed. Allowed types: ${allowedFileTypes}`,
+                tRef.current(
+                  'file_type_not_allowed_allowed_types',
+                  'File type "{{fileType}}" is not allowed. Allowed types: {{allowedTypes}}',
+                  {
+                    fileType,
+                    allowedTypes: allowedFileTypes,
+                    interpolation: { escapeValue: false },
+                  }
+                ),
                 'warning'
               );
               uppy2.removeFile(file.id);
@@ -189,7 +207,10 @@ export function useUppyUploader(props: {
               uppy2.log(error.message, 'error');
               uppy2.info(error.message, 'error', 5000);
               toast.show(
-                `Image file is too large. Maximum size allowed is 30MB.`
+                tRef.current(
+                  'image_file_too_large_max_30mb',
+                  'Image file is too large. Maximum size allowed is 30MB.'
+                )
               );
               uppy2.removeFile(file.id); // Remove file from queue
               return reject(error);
@@ -202,7 +223,10 @@ export function useUppyUploader(props: {
               uppy2.log(error.message, 'error');
               uppy2.info(error.message, 'error', 5000);
               toast.show(
-                `Video file is too large. Maximum size allowed is 1GB.`
+                tRef.current(
+                  'video_file_too_large_max_1gb',
+                  'Video file is too large. Maximum size allowed is 1GB.'
+                )
               );
               uppy2.removeFile(file.id); // Remove file from queue
               return reject(error);

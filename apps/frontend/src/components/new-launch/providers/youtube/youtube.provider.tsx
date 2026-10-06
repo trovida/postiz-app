@@ -12,16 +12,20 @@ import { MediumTags } from '@gitroom/frontend/components/new-launch/providers/me
 import { MediaComponent } from '@gitroom/frontend/components/media/media.component';
 import { Select } from '@gitroom/react/form/select';
 import { YoutubePreview } from '@gitroom/frontend/components/new-launch/providers/youtube/youtube.preview';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 const type = [
   {
+    key: 'youtube_visibility_public',
     label: 'Public',
     value: 'public',
   },
   {
+    key: 'youtube_visibility_private',
     label: 'Private',
     value: 'private',
   },
   {
+    key: 'youtube_visibility_unlisted',
     label: 'Unlisted',
     value: 'unlisted',
   },
@@ -29,16 +33,19 @@ const type = [
 
 const madeForKids = [
   {
+    key: 'no',
     label: 'No',
     value: 'no',
   },
   {
+    key: 'yes',
     label: 'Yes',
     value: 'yes',
   },
 ];
 const YoutubeSettings: FC = () => {
   const { register, control } = useSettings();
+  const t = useT();
   return (
     <div className="flex flex-col">
       <Input label="Title" {...register('title')} maxLength={100} />
@@ -48,9 +55,9 @@ const YoutubeSettings: FC = () => {
           value: 'public',
         })}
       >
-        {type.map((t) => (
-          <option key={t.value} value={t.value}>
-            {t.label}
+        {type.map((option) => (
+          <option key={option.value} value={option.value}>
+            {t(option.key, option.label)}
           </option>
         ))}
       </Select>
@@ -60,19 +67,19 @@ const YoutubeSettings: FC = () => {
           value: 'no',
         })}
       >
-        {madeForKids.map((t) => (
-          <option key={t.value} value={t.value}>
-            {t.label}
+        {madeForKids.map((option) => (
+          <option key={option.value} value={option.value}>
+            {t(option.key, option.label)}
           </option>
         ))}
       </Select>
-      <MediumTags label="Tags" {...register('tags')} />
+      <MediumTags label={t('label_tags', 'Tags')} {...register('tags')} />
       <div className="mt-[20px]">
         <MediaComponent
           type="image"
           width={1280}
           height={720}
-          label="Thumbnail"
+          label={t('label_thumbnail', 'Thumbnail')}
           description="Thumbnail picture (optional)"
           {...register('thumbnail')}
         />

@@ -8,6 +8,7 @@ import { ToolSidebarHeader } from "./tool-sidebar-header";
 import { cn } from "../lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface TextSidebarProps {
   editor: Editor | undefined;
@@ -20,6 +21,7 @@ export const TextSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: TextSidebarProps) => {
+  const t = useT();
   const onClose = () => {
     onChangeActiveTool("select");
   };
@@ -32,52 +34,52 @@ export const TextSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Text"
-        description="Add text to your canvas"
+        title={t('editor_text', 'Text')}
+        description={t('editor_text_description', 'Add text to your canvas')}
       />
       <ScrollArea>
         <div className="p-4 space-y-4 border-b">
           <Button
             className="w-full"
-            onClick={() => editor?.addText("Textbox")}
+            onClick={() => editor?.addText(t('editor_default_textbox', 'Textbox'))}
           >
-            Add a textbox
+            {t('editor_add_textbox', 'Add a textbox')}
           </Button>
           <Button
             className="w-full h-16"
             variant="secondary"
             size="lg"
-            onClick={() => editor?.addText("Heading", {
+            onClick={() => editor?.addText(t('editor_default_heading', 'Heading'), {
               fontSize: 80,
               fontWeight: 700,
             })}
           >
             <span className="text-3xl font-bold">
-              Add a heading
+              {t('editor_add_heading', 'Add a heading')}
             </span>
           </Button>
           <Button
             className="w-full h-16"
             variant="secondary"
             size="lg"
-            onClick={() => editor?.addText("Subheading", {
+            onClick={() => editor?.addText(t('editor_default_subheading', 'Subheading'), {
               fontSize: 44,
               fontWeight: 600,
             })}
           >
             <span className="text-xl font-semibold">
-              Add a subheading
+              {t('editor_add_subheading', 'Add a subheading')}
             </span>
           </Button>
           <Button
             className="w-full h-16"
             variant="secondary"
             size="lg"
-            onClick={() => editor?.addText("Paragraph", {
+            onClick={() => editor?.addText(t('editor_paragraph', 'Paragraph'), {
               fontSize: 32,
             })}
           >
-            Paragraph
+            {t('editor_paragraph', 'Paragraph')}
           </Button>
         </div>
       </ScrollArea>

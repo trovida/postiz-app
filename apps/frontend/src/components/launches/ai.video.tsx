@@ -21,6 +21,7 @@ export const Modal: FC<{
   onChange: (params: { id: string; path: string }) => void;
 }> = (props) => {
   const { type, onChange, close, setLoading } = props;
+  const t = useT();
   const fetch = useFetch();
   const setLocked = useLaunchStore((state) => state.setLocked);
   const form = useForm();
@@ -45,7 +46,10 @@ export const Modal: FC<{
 
     const customParams = form.getValues();
     if (!(await form.trigger())) {
-      toaster.show('Please fill all required fields', 'warning');
+      toaster.show(
+        t('please_fill_all_required_fields', 'Please fill all required fields'),
+        'warning'
+      );
       return;
     }
     try {
@@ -61,18 +65,18 @@ export const Modal: FC<{
       if (image.status == 200 || image.status == 201) {
         onChange(await image.json());
       } else {
-        toaster.show('Video generation failed', 'warning');
+        toaster.show(t('ai_video_generation_failed', 'Video generation failed'), 'warning');
       }
     } catch (e) {
       toaster.show(
-        'Video generation failed or timed out — if it completes, it will appear in your media library',
+        t('ai_video_generation_timed_out', 'Video generation failed or timed out — if it completes, it will appear in your media library'),
         'warning'
       );
     }
 
     setLocked(false);
     setLoading(false);
-  }, [type, position]);
+  }, [type, position, t]);
 
   return (
     // Start with an empty prompt — we no longer copy the post's text field.
@@ -82,7 +86,7 @@ export const Modal: FC<{
         className="flex flex-col gap-[10px]"
       >
         {createPortal(
-          <>{data?.credits || 0} credits left</>,
+          <>{t('ai_credits_left', '{{count}} credits left', { count: data?.credits || 0 })}</>,
           document.querySelector('.top-title-content') ||
             document.createElement('div')
         )}
@@ -97,7 +101,7 @@ export const Modal: FC<{
                       onClick={() => setPosition('vertical')}
                       secondary={position === 'horizontal'}
                     >
-                      Vertical (Stories, Reels)
+                      {t('ai_video_vertical', 'Vertical (Stories, Reels)')}
                     </Button>
                   </div>
                   <div className="flex-1 flex mt-[10px]">
@@ -106,7 +110,7 @@ export const Modal: FC<{
                       onClick={() => setPosition('horizontal')}
                       secondary={position === 'vertical'}
                     >
-                      Horizontal (Normal Post)
+                      {t('ai_video_horizontal', 'Horizontal (Normal Post)')}
                     </Button>
                   </div>
                 </div>
@@ -115,7 +119,7 @@ export const Modal: FC<{
             </div>
             <div className="flex">
               <Button type="submit" className="flex-1">
-                Generate
+                {t('generate', 'Generate')}
               </Button>
             </div>
           </div>
@@ -249,7 +253,7 @@ export const AiVideo: FC<{
             </svg>
           </div>
           <div className="text-[10px] font-[600] iconBreak:hidden block">
-            {t('ai', 'AI')} Video
+            {t('ai_video', 'AI Video')}
           </div>
         </div>
       </div>

@@ -19,6 +19,11 @@ i18next
     lng: undefined,
     fallbackNS: defaultNS,
     defaultNS,
+    // React already escapes rendered text, so i18next's own escaping double-
+    // encodes interpolated values ("O'Brien" → "O&#39;Brien"). The only place a
+    // t() result reaches dangerouslySetInnerHTML is the billing FAQ, whose sole
+    // interpolated value is a constant product name.
+    interpolation: { escapeValue: false },
     detection: {
       // querystring first so a Trovida hand-off (?lng=xx) wins, then the user's
       // own choice (cookie), then the request header. caches:['cookie'] persists

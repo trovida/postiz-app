@@ -44,7 +44,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { groupBy, random, sortBy } from 'lodash';
 import SafeImage from '@gitroom/react/helpers/safe.image';
 import { extend } from 'dayjs';
-import { isUSCitizen } from './helpers/isuscitizen.utils';
+import { usesUSFormats } from './helpers/isuscitizen.utils';
 import { useInterval } from '@mantine/hooks';
 import { StatisticsModal } from '@gitroom/frontend/components/launches/statistics';
 import { MissingReleaseModal } from '@gitroom/frontend/components/launches/missing-release.modal';
@@ -79,7 +79,7 @@ i18next.on('languageChanged', () => {
 updateDayjsLocale();
 
 const convertTimeFormatBasedOnLocality = (time: number) => {
-  if (isUSCitizen()) {
+  if (usesUSFormats()) {
     return `${time === 12 ? 12 : time % 12}:00 ${time >= 12 ? 'PM' : 'AM'}`;
   } else {
     return `${time}:00`;
@@ -315,7 +315,7 @@ export const DayView = () => {
                 .startOf('day')
                 .add(option[0].time, 'minute')
                 .local()
-                .format(isUSCitizen() ? 'hh:mm A' : 'LT')}
+                .format(usesUSFormats() ? 'hh:mm A' : 'LT')}
             </div>
             <div
               key={option[0].time}
@@ -541,7 +541,7 @@ export const ListView = () => {
         {groupedPosts.map(([dateKey, datePosts]) => (
           <Fragment key={dateKey}>
             <div className="text-center text-[14px] min-h-[21px] text-textColor font-[500] mt-[10px]">
-              {newDayjs(dateKey).format(isUSCitizen() ? 'dddd, MMMM D, YYYY' : 'dddd, D MMMM YYYY')}
+              {newDayjs(dateKey).format(usesUSFormats() ? 'dddd, MMMM D, YYYY' : 'dddd, LL')}
             </div>
             <div className="flex flex-col gap-[10px] mb-[20px] px-[10px]">
               {datePosts.map((post) => (
@@ -1188,7 +1188,7 @@ const CalendarItem: FC<{
         </div>
         {showTime && (
           <div className="text-textColor/50 text-[12px] whitespace-nowrap flex items-center">
-            {newDayjs(post.publishDate).local().format(isUSCitizen() ? 'hh:mm A' : 'HH:mm')}
+            {newDayjs(post.publishDate).local().format(usesUSFormats() ? 'hh:mm A' : 'LT')}
           </div>
         )}
       </div>

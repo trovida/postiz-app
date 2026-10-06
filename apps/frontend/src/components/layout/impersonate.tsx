@@ -359,7 +359,8 @@ const ChargesModal: FC<{ close: () => void }> = ({ close }) => {
       !(await deleteDialog(
         t(
           'refund_selected_confirm',
-          `Are you sure you want to refund ${selected.size} charge(s)? This cannot be undone.`
+          'Are you sure you want to refund {{count}} charge(s)? This cannot be undone.',
+          { count: selected.size }
         ),
         t('yes_refund', 'Yes, refund'),
         t('confirm_refund', 'Confirm Refund'),
@@ -569,8 +570,11 @@ export const Subscription = () => {
       const value = e.target.value;
       if (
         await deleteDialog(
-          'Are you sure you want to add a user subscription?',
-          'Add'
+          t(
+            'are_you_sure_add_user_subscription',
+            'Are you sure you want to add a user subscription?'
+          ),
+          t('add', 'Add')
         )
       ) {
         await fetch('/billing/add-subscription', {
@@ -582,7 +586,7 @@ export const Subscription = () => {
         window.location.reload();
       }
     },
-    []
+    [t]
   );
   return (
     <Select
@@ -606,10 +610,26 @@ export const Subscription = () => {
     </Select>
   );
 };
+// Labels are translated at render time: `t(opt.key, opt.label)`.
 const colorOptions = [
-  { value: 'INFO', label: 'Info (Blue)', className: 'bg-blue-600' },
-  { value: 'WARNING', label: 'Warning (Amber)', className: 'bg-amber-600' },
-  { value: 'ERROR', label: 'Error (Red)', className: 'bg-red-600' },
+  {
+    value: 'INFO',
+    key: 'announcement_color_info_blue',
+    label: 'Info (Blue)',
+    className: 'bg-blue-600',
+  },
+  {
+    value: 'WARNING',
+    key: 'announcement_color_warning_amber',
+    label: 'Warning (Amber)',
+    className: 'bg-amber-600',
+  },
+  {
+    value: 'ERROR',
+    key: 'announcement_color_error_red',
+    label: 'Error (Red)',
+    className: 'bg-red-600',
+  },
 ];
 
 const AddAnnouncementModal: FC<{ close: () => void }> = ({ close }) => {
@@ -673,7 +693,7 @@ const AddAnnouncementModal: FC<{ close: () => void }> = ({ close }) => {
                 color === opt.value ? 'opacity-100 ring-2 ring-white' : 'opacity-40'
               }`}
             >
-              {opt.label}
+              {t(opt.key, opt.label)}
             </div>
           ))}
         </div>
@@ -925,7 +945,8 @@ const SwitchUser = () => {
       !(await deleteDialog(
         t(
           'switch_user_confirm',
-          `This will replace the current account's login with ${selected.email}. All data and the subscription stay with the account — only the login changes, and the new login gains its full access. Switch back to revert.`
+          "This will replace the current account's login with {{email}}. All data and the subscription stay with the account — only the login changes, and the new login gains its full access. Switch back to revert.",
+          { email: selected.email }
         ),
         t('yes_switch', 'Yes, switch'),
         t('switch_user_title', 'Switch User?'),
@@ -1103,7 +1124,10 @@ export const Impersonate = () => {
                 <div className="flex-1">
                   <Input
                     autoComplete="off"
-                    placeholder="Write the user details"
+                    placeholder={t(
+                      'impersonate_user_details_placeholder',
+                      'Write the user details'
+                    )}
                     name="impersonate"
                     disableForm={true}
                     label=""

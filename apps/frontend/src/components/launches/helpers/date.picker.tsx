@@ -3,7 +3,10 @@ import dayjs from 'dayjs';
 import { Calendar, TimeInput } from '@mantine/dates';
 import { useClickOutside } from '@mantine/hooks';
 import { Button } from '@gitroom/react/form/button';
-import { isUSCitizen } from './isuscitizen.utils';
+import { usesUSFormats } from './isuscitizen.utils';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+
+dayjs.extend(localizedFormat);
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { newDayjs } from '@gitroom/frontend/components/layout/set.timezone';
 import { CalendarIcon } from '@gitroom/frontend/components/ui/icons';
@@ -43,7 +46,7 @@ export const DatePicker: FC<{
         <CalendarIcon />
       </div>
       <div className="cursor-pointer">
-        {date.format(isUSCitizen() ? 'MM/DD/YYYY hh:mm A' : 'DD/MM/YYYY HH:mm')}
+        {date.format(usesUSFormats() ? 'MM/DD/YYYY hh:mm A' : 'L LT')}
       </div>
       {open && (
         <div
@@ -73,7 +76,7 @@ export const DatePicker: FC<{
           />
           <TimeInput
             onChange={changeDate('time')}
-            label="Pick time"
+            label={t('label_pick_time', 'Pick time')}
             classNames={{
               label: 'text-textColor py-[12px]',
               input:

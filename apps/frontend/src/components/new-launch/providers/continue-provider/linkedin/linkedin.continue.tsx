@@ -1,6 +1,7 @@
 'use client';
 
 import { withContinueProvider } from '../with-continue-provider';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface LinkedinItem {
   id: string;
@@ -14,6 +15,22 @@ interface LinkedinSelection {
   id: string;
   pageId: string;
 }
+
+const LinkedinItemView = ({ item }: { item: LinkedinItem }) => {
+  const t = useT();
+  return (
+    <>
+      <div>
+        <img
+          className="w-full"
+          src={item.picture}
+          alt={t('profile_picture_alt', 'profile')}
+        />
+      </div>
+      <div>{item.name}</div>
+    </>
+  );
+};
 
 export const LinkedinContinue = withContinueProvider<
   LinkedinItem,
@@ -37,12 +54,5 @@ export const LinkedinContinue = withContinueProvider<
   getSelectionValue: (item) => ({ id: item.id, pageId: item.pageId }),
   transformSaveData: (selection) => ({ page: selection.id }),
   isSelected: (item, selection) => selection?.id === item.id,
-  renderItem: (item) => (
-    <>
-      <div>
-        <img className="w-full" src={item.picture} alt="profile" />
-      </div>
-      <div>{item.name}</div>
-    </>
-  ),
+  renderItem: (item) => <LinkedinItemView item={item} />,
 });

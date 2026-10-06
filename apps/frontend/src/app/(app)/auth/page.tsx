@@ -6,10 +6,13 @@ import { isGeneralServerSide } from '@gitroom/helpers/utils/is.general.server.si
 import Link from 'next/link';
 import { getT } from '@gitroom/react/translation/get.translation.service.backend';
 import { LoginWithOidc } from '@gitroom/frontend/components/auth/login.with.oidc';
-export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'Postiz' : 'Gitroom'} Register`,
-  description: '',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: `${isGeneralServerSide() ? 'Postiz' : 'Gitroom'} – ${t('page_title_register', 'Register')}`,
+    description: '',
+  };
+}
 export default async function Auth(params: {searchParams: Promise<{provider: string}>}) {
   const t = await getT();
   if (process.env.DISABLE_REGISTRATION === 'true') {

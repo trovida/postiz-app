@@ -18,12 +18,15 @@ import { deleteDialog } from '@gitroom/react/helpers/delete.dialog';
 import copy from 'copy-to-clipboard';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
+// Names are translated at render time: `t(role.key, role.name)`.
 const roles = [
   {
+    key: 'user',
     name: 'User',
     value: 'USER',
   },
   {
+    key: 'admin',
     name: 'Admin',
     value: 'ADMIN',
   },
@@ -81,11 +84,11 @@ export const AddMember = () => {
               name="email"
             />
           )}
-          <Select label="Role" name="role">
+          <Select label={t('label_role', 'Role')} name="role">
             <option value="">{t('select_role', 'Select Role')}</option>
             {roles.map((role) => (
               <option key={role.value} value={role.value}>
-                {role.name}
+                {t(role.key, role.name)}
               </option>
             ))}
           </Select>

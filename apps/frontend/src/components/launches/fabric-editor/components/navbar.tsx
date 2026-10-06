@@ -26,7 +26,7 @@ export const Navbar = ({
   return (
     <nav className="w-full flex items-center p-4 h-[68px] gap-x-4 border-b">
       <div className="w-full flex items-center gap-x-1 h-full">
-        <Hint label="Select" side="bottom" sideOffset={10}>
+        <Hint label={t('select', 'Select')} side="bottom" sideOffset={10}>
           <Button
             variant="ghost"
             size="icon"
@@ -36,7 +36,7 @@ export const Navbar = ({
             <MousePointerClick className="size-4" />
           </Button>
         </Hint>
-        <Hint label="Undo" side="bottom" sideOffset={10}>
+        <Hint label={t('editor_undo', 'Undo')} side="bottom" sideOffset={10}>
           <Button
             disabled={!editor?.canUndo()}
             variant="ghost"
@@ -46,7 +46,7 @@ export const Navbar = ({
             <Undo2 className="size-4" />
           </Button>
         </Hint>
-        <Hint label="Redo" side="bottom" sideOffset={10}>
+        <Hint label={t('editor_redo', 'Redo')} side="bottom" sideOffset={10}>
           <Button
             disabled={!editor?.canRedo()}
             variant="ghost"

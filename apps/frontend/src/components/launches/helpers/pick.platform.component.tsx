@@ -7,6 +7,7 @@ import SafeImage from '@gitroom/react/helpers/safe.image';
 import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core';
 import { useStateCallback } from '@gitroom/react/helpers/use.state.callback';
 import { timer } from '@gitroom/helpers/utils/timer';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 export const PickPlatforms: FC<{
   integrations: Integrations[];
   selectedIntegrations: Integrations[];
@@ -17,6 +18,7 @@ export const PickPlatforms: FC<{
   toolTip?: boolean;
 }> = (props) => {
   const { hide, isMain, integrations, selectedIntegrations, onChange } = props;
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [isLeft, setIsLeft] = useState(false);
   const [isRight, setIsRight] = useState(false);
@@ -93,7 +95,10 @@ export const PickPlatforms: FC<{
         if (
           !props.singleSelect &&
           !(await deleteDialog(
-            'Are you sure you want to remove this platform?'
+            t(
+              'are_you_sure_remove_platform',
+              'Are you sure you want to remove this platform?'
+            )
           ))
         ) {
           return;
@@ -132,7 +137,7 @@ export const PickPlatforms: FC<{
       await timer(500);
       await Promise.all(promises);
     },
-    [onChange, props.singleSelect, selectedAccounts, setSelectedAccounts]
+    [onChange, props.singleSelect, selectedAccounts, setSelectedAccounts, t]
   );
   const handler = async ({ integrationsId }: { integrationsId: string[] }) => {
     const selected = selectedIntegrations.map((p) => p.id);

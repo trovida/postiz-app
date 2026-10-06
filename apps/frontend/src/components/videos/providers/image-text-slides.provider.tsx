@@ -6,6 +6,7 @@ import { useFormContext } from 'react-hook-form';
 import { Button } from '@gitroom/react/form/button';
 import clsx from 'clsx';
 import { useVideo } from '@gitroom/frontend/components/videos/video.context.wrapper';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 export interface Voices {
   voices: Voice[];
@@ -18,6 +19,7 @@ export interface Voice {
 }
 
 const VoiceSelector: FC = () => {
+  const t = useT();
   const { register, watch, setValue } = useFormContext();
   const videoFunction = useVideoFunction();
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
@@ -101,7 +103,9 @@ const VoiceSelector: FC = () => {
   if (isLoading || !data?.voices?.length) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div className="text-sm text-gray-500">Loading voices...</div>
+        <div className="text-sm text-gray-500">
+          {t('loading_voices', 'Loading voices...')}
+        </div>
       </div>
     );
   }
@@ -109,7 +113,7 @@ const VoiceSelector: FC = () => {
   return (
     <div className="space-y-3">
       <div className="text-sm font-medium text-textColor mb-4">
-        Select a Voice
+        {t('select_a_voice', 'Select a Voice')}
       </div>
       <div className="space-y-2">
         {data.voices.map((voice) => (

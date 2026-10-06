@@ -12,6 +12,7 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface StrokeWidthSidebarProps {
   editor: Editor | undefined;
@@ -24,6 +25,7 @@ export const StrokeWidthSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: StrokeWidthSidebarProps) => {
+  const t = useT();
   const widthValue = editor?.getActiveStrokeWidth() || STROKE_WIDTH;
   const typeValue = editor?.getActiveStrokeDashArray() || STROKE_DASH_ARRAY;
 
@@ -47,13 +49,13 @@ export const StrokeWidthSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Stroke options"
-        description="Modify the stroke of your element"
+        title={t('editor_stroke_options', 'Stroke options')}
+        description={t('editor_stroke_options_description', 'Modify the stroke of your element')}
       />
       <ScrollArea>
         <div className="p-4 space-y-4 border-b">
           <Label className="text-sm">
-            Stroke width
+            {t('editor_stroke_width', 'Stroke width')}
           </Label>
           <Slider
             value={[widthValue]}
@@ -62,7 +64,7 @@ export const StrokeWidthSidebar = ({
         </div>
         <div className="p-4 space-y-4 border-b">
           <Label className="text-sm">
-            Stroke type
+            {t('editor_stroke_type', 'Stroke type')}
           </Label>
           <Button
             onClick={() => onChangeStrokeType([])}

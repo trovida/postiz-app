@@ -9,6 +9,7 @@ import { useUser } from '@gitroom/frontend/components/layout/user.context';
 import { Input } from '@gitroom/react/form/input';
 import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import { deleteDialog } from '@gitroom/react/helpers/delete.dialog';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 export const CommentBox: FC<{
   value?: string;
   type: 'textarea' | 'input';
@@ -76,6 +77,7 @@ export const EditableCommentComponent: FC<{
   const [commentContent, setCommentContent] = useState(comment.content);
   const [editMode, setEditMode] = useState(false);
   const user = useUser();
+  const t = useT();
   const updateComment = useCallback((commentValue: string) => {
     if (commentValue !== comment.content) {
       setCommentContent(commentValue);
@@ -86,13 +88,16 @@ export const EditableCommentComponent: FC<{
   const deleteCommentFunction = useCallback(async () => {
     if (
       await deleteDialog(
-        'Are you sure you want to delete this comment?',
-        'Yes, Delete'
+        t(
+          'are_you_sure_delete_comment',
+          'Are you sure you want to delete this comment?'
+        ),
+        t('yes_delete_button', 'Yes, Delete')
       )
     ) {
       onDelete();
     }
-  }, []);
+  }, [t]);
   if (editMode) {
     return (
       <CommentBox

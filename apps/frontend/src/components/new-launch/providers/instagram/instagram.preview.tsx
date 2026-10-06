@@ -1,4 +1,5 @@
 import { useIntegration } from '@gitroom/frontend/components/launches/helpers/use.integration';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
 import { useMediaDirectory } from '@gitroom/react/helpers/use.media.directory';
 import { stripHtmlValidation } from '@gitroom/helpers/utils/strip.html.validation';
@@ -11,6 +12,7 @@ export const InstagramPreview: FC<{
   maximumCharacters?: number;
 }> = (props) => {
   const { value: topValue, integration } = useIntegration();
+  const t = useT();
   const current = useLaunchStore((state) => state.current);
   const mediaDir = useMediaDirectory();
 
@@ -53,7 +55,7 @@ export const InstagramPreview: FC<{
         <div className="w-[36px] h-[36px]">
           <img
             src={integration?.picture || '/no-picture.jpg'}
-            alt="social"
+            alt={t('preview_avatar_alt', 'social')}
             className="rounded-full relative z-[2] w-[36px] h-[36px]"
           />
         </div>
@@ -174,7 +176,7 @@ export const InstagramPreview: FC<{
                 <div className="h-[34px]">
                   <img
                     src={integration?.picture || '/no-picture.jpg'}
-                    alt="social"
+                    alt={t('preview_avatar_alt', 'social')}
                     className="rounded-full relative z-[2] h-[34px] w-[34px]"
                   />
                 </div>
@@ -207,8 +209,10 @@ export const InstagramPreview: FC<{
                   <div className="flex font-[400] text-[12px] text-textLinkedin items-center">
                     <div className="flex gap-[16px] flex-1">
                       <div className="font-[700]">30m</div>
-                      <div className="font-[700]">8 Likes</div>
-                      <div className="font-[700]">Reply</div>
+                      <div className="font-[700]">
+                        {t('preview_instagram_8_likes', '8 Likes')}
+                      </div>
+                      <div className="font-[700]">{t('reply', 'Reply')}</div>
                     </div>
                   </div>
                 </div>

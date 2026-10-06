@@ -1,4 +1,5 @@
 import { useIntegration } from '@gitroom/frontend/components/launches/helpers/use.integration';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
 import { useMediaDirectory } from '@gitroom/react/helpers/use.media.directory';
 import { stripHtmlValidation } from '@gitroom/helpers/utils/strip.html.validation';
@@ -21,6 +22,7 @@ export const TiktokPreview: FC<{
   maximumCharacters?: number;
 }> = (props) => {
   const { value: topValue, integration } = useIntegration();
+  const t = useT();
   const current = useLaunchStore((state) => state.current);
   const mediaDir = useMediaDirectory();
 
@@ -74,7 +76,8 @@ export const TiktokPreview: FC<{
         />
         <div className="absolute pointer-events-none w-full h-full start-0 top-0 px-[12px] py-[25px] justify-end items-start text-white flex flex-col">
           <div className="text-[14px] font-[500]">@{integration?.name}</div>
-          <div className="text-[13px] font-[400] whitespace-pre-line line-clamp-6 w-full"
+          <div
+            className="text-[13px] font-[400] whitespace-pre-line line-clamp-6 w-full"
             dangerouslySetInnerHTML={{ __html: renderContent?.[0]?.text || '' }}
           />
         </div>
@@ -83,7 +86,7 @@ export const TiktokPreview: FC<{
         <div className="relative">
           <img
             src={integration?.picture || '/no-picture.jpg'}
-            alt="social"
+            alt={t('preview_avatar_alt', 'social')}
             className="rounded-full z-[2] w-[29px] h-[29px]"
           />
           <div className="absolute left-[50%] -translate-x-[50%] bottom-0 translate-y-[50%] z-[1]">
@@ -173,7 +176,7 @@ export const TiktokPreview: FC<{
         <div>
           <img
             src={integration?.picture || '/no-picture.jpg'}
-            alt="social"
+            alt={t('preview_avatar_alt', 'social')}
             className="rounded-full relative z-[2] w-[29px] h-[29px]"
           />
         </div>

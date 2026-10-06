@@ -10,6 +10,7 @@ import { ToolSidebarHeader } from "./tool-sidebar-header";
 import { cn } from "../lib/utils";
 import { Slider } from "../ui/slider";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface OpacitySidebarProps {
   editor: Editor | undefined;
@@ -22,6 +23,7 @@ export const OpacitySidebar = ({
   activeTool,
   onChangeActiveTool,
 }: OpacitySidebarProps) => {
+  const t = useT();
   const initialValue = editor?.getActiveOpacity() || 1;
   const selectedObject = useMemo(() => editor?.selectedObjects[0], [editor?.selectedObjects]);
 
@@ -50,8 +52,8 @@ export const OpacitySidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Opacity"
-        description="Change the opacity of the selected object"
+        title={t('editor_opacity', 'Opacity')}
+        description={t('editor_opacity_description', 'Change the opacity of the selected object')}
       />
       <ScrollArea>
         <div className="p-4 space-y-4 border-b">

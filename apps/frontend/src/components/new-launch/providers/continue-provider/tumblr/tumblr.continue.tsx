@@ -1,6 +1,7 @@
 'use client';
 
 import { withContinueProvider } from '../with-continue-provider';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface TumblrBlogItem {
   id: string;
@@ -18,6 +19,43 @@ interface TumblrBlogItem {
 interface TumblrBlogSelection {
   id: string;
 }
+
+const TumblrItemView = ({ item }: { item: TumblrBlogItem }) => {
+  const t = useT();
+  return (
+    <>
+      <div className="flex justify-center">
+        {item.picture?.data?.url ? (
+          <img
+            className="w-[80px] h-[80px] object-cover rounded-full"
+            src={item.picture.data.url}
+            alt={item.name}
+          />
+        ) : (
+          <div className="w-[80px] h-[80px] bg-input rounded-full flex items-center justify-center text-[32px] font-semibold">
+            t
+          </div>
+        )}
+      </div>
+      <div className="text-sm font-medium">{item.name}</div>
+      {item.username && (
+        <div className="text-xs text-gray-500 break-all">{item.username}</div>
+      )}
+      {!!item.followers && (
+        <div className="text-xs text-gray-400">
+          {t('tumblr_followers_count', '{{followers}} followers', {
+            followers: item.followers.toLocaleString(),
+          })}
+        </div>
+      )}
+      {item.primary && (
+        <div className="text-xs text-gray-400">
+          {t('tumblr_primary_blog', 'Primary')}
+        </div>
+      )}
+    </>
+  );
+};
 
 export const TumblrContinue = withContinueProvider<
   TumblrBlogItem,
@@ -45,31 +83,5 @@ export const TumblrContinue = withContinueProvider<
   getSelectionValue: (item) => ({ id: item.id }),
   transformSaveData: (selection) => selection,
   isSelected: (item, selection) => selection?.id === item.id,
-  renderItem: (item) => (
-    <>
-      <div className="flex justify-center">
-        {item.picture?.data?.url ? (
-          <img
-            className="w-[80px] h-[80px] object-cover rounded-full"
-            src={item.picture.data.url}
-            alt={item.name}
-          />
-        ) : (
-          <div className="w-[80px] h-[80px] bg-input rounded-full flex items-center justify-center text-[32px] font-semibold">
-            t
-          </div>
-        )}
-      </div>
-      <div className="text-sm font-medium">{item.name}</div>
-      {item.username && (
-        <div className="text-xs text-gray-500 break-all">{item.username}</div>
-      )}
-      {!!item.followers && (
-        <div className="text-xs text-gray-400">
-          {item.followers.toLocaleString()} followers
-        </div>
-      )}
-      {item.primary && <div className="text-xs text-gray-400">Primary</div>}
-    </>
-  ),
+  renderItem: (item) => <TumblrItemView item={item} />,
 });

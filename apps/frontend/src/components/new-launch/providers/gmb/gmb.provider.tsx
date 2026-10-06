@@ -10,17 +10,21 @@ import { useSettings } from '@gitroom/frontend/components/launches/helpers/use.v
 import { Input } from '@gitroom/react/form/input';
 import { Select } from '@gitroom/react/form/select';
 import { useWatch } from 'react-hook-form';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 const topicTypes = [
   {
+    key: 'gmb_topic_standard_update',
     label: 'Standard Update',
     value: 'STANDARD',
   },
   {
+    key: 'gmb_topic_event',
     label: 'Event',
     value: 'EVENT',
   },
   {
+    key: 'gmb_topic_offer',
     label: 'Offer',
     value: 'OFFER',
   },
@@ -28,34 +32,42 @@ const topicTypes = [
 
 const callToActionTypes = [
   {
+    key: 'none',
     label: 'None',
     value: 'NONE',
   },
   {
+    key: 'gmb_cta_book',
     label: 'Book',
     value: 'BOOK',
   },
   {
+    key: 'gmb_cta_order_online',
     label: 'Order Online',
     value: 'ORDER',
   },
   {
+    key: 'gmb_cta_shop',
     label: 'Shop',
     value: 'SHOP',
   },
   {
+    key: 'gmb_cta_learn_more',
     label: 'Learn More',
     value: 'LEARN_MORE',
   },
   {
+    key: 'sign_up',
     label: 'Sign Up',
     value: 'SIGN_UP',
   },
   {
+    key: 'gmb_cta_get_offer',
     label: 'Get Offer',
     value: 'GET_OFFER',
   },
   {
+    key: 'gmb_cta_call',
     label: 'Call',
     value: 'CALL',
   },
@@ -63,6 +75,7 @@ const callToActionTypes = [
 
 const GmbSettings: FC = () => {
   const { register, control } = useSettings();
+  const t = useT();
   const topicType = useWatch({ control, name: 'topicType' });
   const callToActionType = useWatch({ control, name: 'callToActionType' });
 
@@ -74,9 +87,9 @@ const GmbSettings: FC = () => {
           value: 'STANDARD',
         })}
       >
-        {topicTypes.map((t) => (
-          <option key={t.value} value={t.value}>
-            {t.label}
+        {topicTypes.map((option) => (
+          <option key={option.value} value={option.value}>
+            {t(option.key, option.label)}
           </option>
         ))}
       </Select>
@@ -87,9 +100,9 @@ const GmbSettings: FC = () => {
           value: 'NONE',
         })}
       >
-        {callToActionTypes.map((t) => (
-          <option key={t.value} value={t.value}>
-            {t.label}
+        {callToActionTypes.map((option) => (
+          <option key={option.value} value={option.value}>
+            {t(option.key, option.label)}
           </option>
         ))}
       </Select>
@@ -106,10 +119,12 @@ const GmbSettings: FC = () => {
 
       {topicType === 'EVENT' && (
         <div className="flex flex-col gap-[10px] mt-[10px] p-[15px] border border-input rounded-[8px]">
-          <div className="text-[14px] font-medium mb-[5px]">Event Details</div>
+          <div className="text-[14px] font-medium mb-[5px]">
+            {t('gmb_event_details', 'Event Details')}
+          </div>
           <Input
             label="Event Title"
-            placeholder="Event name"
+            placeholder={t('gmb_event_name_placeholder', 'Event name')}
             {...register('eventTitle')}
           />
           <div className="grid grid-cols-2 gap-[10px]">
@@ -137,7 +152,9 @@ const GmbSettings: FC = () => {
 
       {topicType === 'OFFER' && (
         <div className="flex flex-col gap-[10px] mt-[10px] p-[15px] border border-input rounded-[8px]">
-          <div className="text-[14px] font-medium mb-[5px]">Offer Details</div>
+          <div className="text-[14px] font-medium mb-[5px]">
+            {t('gmb_offer_details', 'Offer Details')}
+          </div>
           <Input
             label="Coupon Code (optional)"
             placeholder="SAVE20"
@@ -150,7 +167,7 @@ const GmbSettings: FC = () => {
           />
           <Input
             label="Terms & Conditions (optional)"
-            placeholder="Valid until..."
+            placeholder={t('gmb_offer_terms_placeholder', 'Valid until...')}
             {...register('offerTerms')}
           />
         </div>

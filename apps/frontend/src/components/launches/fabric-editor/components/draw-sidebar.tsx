@@ -12,6 +12,7 @@ import { cn } from "../lib/utils";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface DrawSidebarProps {
   editor: Editor | undefined;
@@ -24,6 +25,7 @@ export const DrawSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: DrawSidebarProps) => {
+  const t = useT();
   const colorValue = editor?.getActiveStrokeColor() || STROKE_COLOR;
   const widthValue = editor?.getActiveStrokeWidth() || STROKE_WIDTH;
 
@@ -48,13 +50,13 @@ export const DrawSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Drawing mode"
-        description="Modify brush settings"
+        title={t('editor_drawing_mode', 'Drawing mode')}
+        description={t('editor_drawing_mode_description', 'Modify brush settings')}
       />
       <ScrollArea>
         <div className="p-4 space-y-6 border-b">
           <Label className="text-sm">
-            Brush width
+            {t('editor_brush_width', 'Brush width')}
           </Label>
           <Slider
             value={[widthValue]}

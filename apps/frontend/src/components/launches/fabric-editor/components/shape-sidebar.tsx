@@ -9,6 +9,7 @@ import { ToolSidebarHeader } from "./tool-sidebar-header";
 
 import { cn } from "../lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface ShapeSidebarProps {
   editor: Editor | undefined;
@@ -21,6 +22,7 @@ export const ShapeSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: ShapeSidebarProps) => {
+  const t = useT();
   const onClose = () => {
     onChangeActiveTool("select");
   };
@@ -33,8 +35,8 @@ export const ShapeSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Shapes"
-        description="Add shapes to your canvas"
+        title={t('editor_shapes', 'Shapes')}
+        description={t('editor_shapes_description', 'Add shapes to your canvas')}
       />
       <ScrollArea>
         <div className="grid grid-cols-3 gap-4 p-4">

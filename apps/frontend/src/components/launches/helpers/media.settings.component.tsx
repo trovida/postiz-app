@@ -9,6 +9,7 @@ import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
 import { useVariables } from '@gitroom/react/helpers/variable.context';
 const postUrlEmitter = new EventEmitter();
 
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 export const MediaSettingsLayout = () => {
   const [showPostSelector, setShowPostSelector] = useState(false);
   const [media, setMedia] = useState(undefined);
@@ -101,6 +102,7 @@ export const CreateThumbnail: FC<{
 }> = (props) => {
   const { onSelect, media } = props;
   const { backendUrl } = useVariables();
+  const t = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -194,12 +196,15 @@ export const CreateThumbnail: FC<{
       } catch (fallbackError) {
         console.error('Fallback capture also failed:', fallbackError);
         alert(
-          'Unable to capture frame. This might be due to CORS restrictions on the video source.'
+          t(
+            'unable_to_capture_frame_cors',
+            'Unable to capture frame. This might be due to CORS restrictions on the video source.'
+          )
         );
         setIsCapturing(false);
       }
     }
-  }, [onSelect, currentTime]);
+  }, [onSelect, currentTime, t]);
 
   const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -309,6 +314,7 @@ export const MediaComponentInner: FC<{
     | undefined;
 }> = (props) => {
   const { onClose, onSelect, media } = props;
+  const t = useT();
   const setActivateExitButton = useLaunchStore((e) => e.setActivateExitButton);
   const newFetch = useFetch();
   const [newThumbnail, setNewThumbnail] = useState<string | null>(null);
@@ -366,13 +372,13 @@ export const MediaComponentInner: FC<{
     <div className="mt-[10px] flex flex-col gap-[20px]">
       <div className="flex flex-col space-y-2">
         <label className="text-sm text-textColor font-medium">
-          Alt Text (for accessibility)
+          {t('media_alt_text_label', 'Alt Text (for accessibility)')}
         </label>
         <input
           type="text"
           value={altText}
           onChange={(e) => setAltText(e.target.value)}
-          placeholder="Describe the image/video content..."
+          placeholder={t('media_alt_text_placeholder', 'Describe the image/video content...')}
           className="w-full px-3 py-2 bg-fifth border border-tableBorder rounded-lg text-textColor placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-forth focus:border-transparent"
         />
       </div>
@@ -386,11 +392,11 @@ export const MediaComponentInner: FC<{
                 {(newThumbnail || thumbnail) && (
                   <div className="flex flex-col space-y-2">
                     <span className="text-sm text-textColor">
-                      Current Thumbnail:
+                      {t('media_current_thumbnail', 'Current Thumbnail:')}
                     </span>
                     <img
                       src={newThumbnail || thumbnail}
-                      alt="Current thumbnail"
+                      alt={t('media_current_thumbnail_alt', 'Current thumbnail')}
                       className="max-w-full max-h-[500px] object-contain rounded-lg border border-tableBorder"
                     />
                   </div>
@@ -404,8 +410,8 @@ export const MediaComponentInner: FC<{
                     className="bg-third text-textColor px-6 py-2 rounded-lg hover:bg-opacity-80 transition-all flex-1 border border-tableBorder"
                   >
                     {media.thumbnail || newThumbnail
-                      ? 'Edit Thumbnail'
-                      : 'Create Thumbnail'}
+                      ? t('media_edit_thumbnail', 'Edit Thumbnail')
+                      : t('media_create_thumbnail', 'Create Thumbnail')}
                   </button>
                   {(thumbnail || newThumbnail) && (
                     <button
@@ -416,7 +422,7 @@ export const MediaComponentInner: FC<{
                       }}
                       className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-opacity-80 transition-all flex-1 border border-red-700"
                     >
-                      Clear Thumbnail
+                      {t('media_clear_thumbnail', 'Clear Thumbnail')}
                     </button>
                   )}
                 </div>
@@ -444,7 +450,7 @@ export const MediaComponentInner: FC<{
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <span>Back</span>
+                    <span>{t('back', 'Back')}</span>
                   </button>
                 </div>
 
@@ -479,13 +485,13 @@ export const MediaComponentInner: FC<{
             onClick={onClose}
             className="flex-1 bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-opacity-80 transition-all"
           >
-            Cancel
+            {t('cancel', 'Cancel')}
           </button>
           <button
             onClick={save}
             className="flex-1 bg-forth text-white px-6 py-2 rounded-lg hover:bg-opacity-80 transition-all"
           >
-            Save Changes
+            {t('save_changes', 'Save Changes')}
           </button>
         </div>
       )}

@@ -145,6 +145,7 @@ export const Features: FC<{
 };
 
 const Accept: FC<{ resolve: (res: boolean) => void }> = ({ resolve }) => {
+  const t = useT();
   const [loading, setLoading] = useState(false);
   const fetch = useFetch();
   const toaster = useToaster();
@@ -156,20 +157,25 @@ const Accept: FC<{ resolve: (res: boolean) => void }> = ({ resolve }) => {
     });
 
     resolve(true);
-    toaster.show('50% discount applied successfully');
-  }, []);
+    toaster.show(
+      t('discount_50_applied_successfully', '50% discount applied successfully')
+    );
+  }, [t]);
 
   return (
     <div>
       <div className="mb-[20px]">
-        Would you accept 50% discount for 3 months instead? 🙏🏻
+        {t(
+          'accept_50_discount_for_3_months_instead',
+          'Would you accept 50% discount for 3 months instead? 🙏🏻'
+        )}
       </div>
       <div className="flex gap-[10px]">
         <Button loading={loading} onClick={apply}>
-          Apply 50% discount for 3 months
+          {t('apply_50_discount_for_3_months', 'Apply 50% discount for 3 months')}
         </Button>
         <Button onClick={() => resolve(false)} className="!bg-red-800">
-          Cancel my subscription
+          {t('cancel_my_subscription', 'Cancel my subscription')}
         </Button>
       </div>
     </div>
@@ -299,7 +305,12 @@ export const MainBillingComponent: FC<{
             cancelAt: cancel_at,
           }));
 
-          toast.show('Subscription reactivated successfully');
+          toast.show(
+            t(
+              'subscription_reactivated_successfully',
+              'Subscription reactivated successfully'
+            )
+          );
           setLoading(false);
           return;
         }
@@ -310,17 +321,26 @@ export const MainBillingComponent: FC<{
           pricing[subscription?.subscriptionTier!]?.team_members
         ) {
           messages.push(
-            `Your team members will be removed from your organization`
+            t(
+              'team_members_will_be_removed_from_organization',
+              'Your team members will be removed from your organization'
+            )
           );
         }
         if (billing === 'FREE') {
           if (
             subscription?.cancelAt ||
             (await deleteDialog(
-              `Are you sure you want to cancel your subscription?
-              ${messages.join(', ')}`,
-              'Yes, cancel',
-              'Cancel Subscription'
+              t(
+                'are_you_sure_cancel_subscription_details',
+                'Are you sure you want to cancel your subscription? {{details}}',
+                {
+                  details: messages.join(', '),
+                  interpolation: { escapeValue: false },
+                }
+              ),
+              t('yes_cancel', 'Yes, cancel'),
+              t('cancel_subscription', 'Cancel Subscription')
             ))
           ) {
             const checkDiscount = await (
@@ -329,7 +349,7 @@ export const MainBillingComponent: FC<{
             if (checkDiscount.offerCoupon) {
               const info = await new Promise((res) => {
                 modal.openModal({
-                  title: 'Before you cancel',
+                  title: t('before_you_cancel', 'Before you cancel'),
                   withCloseButton: true,
                   classNames: {
                     modal: 'bg-transparent text-textColor',
@@ -376,14 +396,22 @@ export const MainBillingComponent: FC<{
               cancelAt: cancel_at,
             }));
             if (cancel_at)
-              toast.show('Subscription set to canceled successfully');
+              toast.show(
+                t(
+                  'subscription_set_to_canceled_successfully',
+                  'Subscription set to canceled successfully'
+                )
+              );
             setLoading(false);
           }
           return;
         }
         if (
           messages.length &&
-          !(await deleteDialog(messages.join(', '), 'Yes, continue'))
+          !(await deleteDialog(
+            messages.join(', '),
+            t('yes_continue', 'Yes, continue')
+          ))
         ) {
           return;
         }
@@ -424,9 +452,12 @@ export const MainBillingComponent: FC<{
         if (portal) {
           if (
             await deleteDialog(
-              'We could not charge your credit card, please update your payment method',
-              'Update',
-              'Payment Method Required'
+              t(
+                'could_not_charge_credit_card_update_payment_method',
+                'We could not charge your credit card, please update your payment method'
+              ),
+              t('update', 'Update'),
+              t('payment_method_required', 'Payment Method Required')
             )
           ) {
             window.open(portal);
@@ -448,11 +479,16 @@ export const MainBillingComponent: FC<{
               revalidate: false,
             }
           );
-          toast.show('Subscription updated successfully');
+          toast.show(
+            t(
+              'subscription_updated_successfully',
+              'Subscription updated successfully'
+            )
+          );
         }
         setLoading(false);
       },
-    [monthlyOrYearly, subscription, user, utm]
+    [monthlyOrYearly, subscription, user, utm, t]
   );
   if (user?.isLifetime) {
     router.replace('/');
@@ -464,8 +500,15 @@ export const MainBillingComponent: FC<{
         <div className="text-[20px]">{t('plans', 'Plans')}</div>
         <div className="flex flex-col items-center gap-[8px] rounded-[8px] bg-newBgColorInner p-[24px] text-center">
           <div className="text-[18px]">
-            {t('subscription_managed_by', 'Your subscription is managed by')}{' '}
-            <span className="capitalize">{subscription.provider}</span>
+            {t(
+              'subscription_managed_by_provider',
+              'Your subscription is managed by {{provider}}',
+              {
+                provider:
+                  subscription.provider.charAt(0).toUpperCase() +
+                  subscription.provider.slice(1),
+              }
+            )}
           </div>
           <div className="text-[14px] opacity-70">
             {t(

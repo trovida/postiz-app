@@ -31,7 +31,7 @@ export const OauthProvider = () => {
       <div>
         <SafeImage
           src={oauthLogoUrl || '/icons/generic-oauth.svg'}
-          alt="genericOauth"
+          alt=""
           width={40}
           height={40}
           className="-mt-[7px]"

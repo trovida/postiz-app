@@ -138,7 +138,9 @@ export const AnnouncementBanner: FC = () => {
       {latest.title}
       {announcements.length > 1 && (
         <span className="ml-[8px] opacity-70">
-          (+{announcements.length - 1} {t('more', 'more')})
+          {t('more_count', '(+{{count}} more)', {
+            count: announcements.length - 1,
+          })}
         </span>
       )}
       <style>{`#left-menu {padding-top: ${user?.isSuperAdmin ? '100px !important;' : '60px !important;'}`}</style>

@@ -14,6 +14,15 @@ export default async function AuthLayout({
   children: ReactNode;
 }) {
   const t = await getT();
+  // Whole headline in one key so translators control word order; the styled
+  // count is spliced back in at the {{amount}} position.
+  const [heroBefore, heroAfter = ''] = String(
+    t(
+      'auth_hero_headline',
+      'Over {{amount}} Entrepreneurs use\nPostiz To Grow Their Social Presence',
+      { amount: '__COUNT__', interpolation: { escapeValue: false } }
+    )
+  ).split('__COUNT__');
 
   return (
     <MantineWrapper>
@@ -28,11 +37,10 @@ export default async function AuthLayout({
           </div>
         </div>
         <div className="text-[36px] flex-1 pt-[88px] hidden lg:flex flex-col items-center">
-          <div className="text-center">
-            Over <span className="text-[42px] text-[#FC69FF]">20,000+</span>{' '}
-            Entrepreneurs use
-            <br />
-            Postiz To Grow Their Social Presence
+          <div className="text-center whitespace-pre-line">
+            {heroBefore}
+            <span className="text-[42px] text-[#FC69FF]">20,000+</span>
+            {heroAfter}
           </div>
           <TestimonialComponent />
         </div>

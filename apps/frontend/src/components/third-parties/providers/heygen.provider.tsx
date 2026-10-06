@@ -15,6 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { object, string } from 'zod';
 import { Select } from '@gitroom/react/form/select';
 import { LoadingComponent } from '@gitroom/frontend/components/layout/loading';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 const aspectRatio = [
   { key: 'portrait', value: 'Portrait' },
@@ -96,6 +97,7 @@ const SelectVoiceComponent: FC<{
 };
 
 const HeygenProviderComponent = () => {
+  const t = useT();
   const thirdParty = useThirdParty();
   const load = useThirdPartyFunction('EVERYTIME');
   const { data } = useThirdPartyFunctionSWR('LOAD_ONCE', 'avatars');
@@ -127,7 +129,12 @@ const HeygenProviderComponent = () => {
 
   const generateVoice = useCallback(async () => {
     if (
-      !(await deleteDialog('Are you sure? it will delete the current text'))
+      !(await deleteDialog(
+        t(
+          'are_you_sure_it_will_delete_current_text',
+          'Are you sure? it will delete the current text'
+        )
+      ))
     ) {
       return;
     }
@@ -145,7 +152,7 @@ const HeygenProviderComponent = () => {
 
     setVoiceLoading(false);
     setHideVoiceGenerator(true);
-  }, [thirdParty]);
+  }, [thirdParty, t]);
 
   const submit: SubmitHandler<{ voice: string; avatar: string }> = useCallback(
     async (params) => {
@@ -159,11 +166,17 @@ const HeygenProviderComponent = () => {
     <div>
       {form.formState.isSubmitting && (
         <div className="fixed left-0 top-0 w-full leading-[50px] pt-[200px] h-screen bg-black/90 z-50 flex flex-col justify-center items-center text-center text-3xl">
-          Grab a coffee and relax, this may take a while...
+          {t(
+            'grab_a_coffee_this_may_take_a_while',
+            'Grab a coffee and relax, this may take a while...'
+          )}
           <br />
-          You can also track the progress directly in HeyGen Dashboard.
+          {t(
+            'track_progress_in_heygen_dashboard',
+            'You can also track the progress directly in HeyGen Dashboard.'
+          )}
           <br />
-          DO NOT CLOSE THIS WINDOW!
+          {t('do_not_close_this_window', 'DO NOT CLOSE THIS WINDOW!')}
           <br />
           <LoadingComponent width={200} height={200} />
         </div>
@@ -175,7 +188,7 @@ const HeygenProviderComponent = () => {
           className="w-full flex flex-col"
         >
           <Select label="Aspect Ratio" {...form.register('aspect_ratio')}>
-            <option value="">--SELECT--</option>
+            <option value="">{t('select_placeholder_upper', '--SELECT--')}</option>
             {aspectRatio.map((p) => (
               <option key={p.key} value={p.key}>
                 {p.value}
@@ -184,7 +197,7 @@ const HeygenProviderComponent = () => {
           </Select>
 
           <Select label="Generate Captions" {...form.register('captions')}>
-            <option value="">--SELECT--</option>
+            <option value="">{t('select_placeholder_upper', '--SELECT--')}</option>
             {generateCaptions.map((p) => (
               <option key={p.key} value={p.key}>
                 {p.value}
@@ -192,16 +205,23 @@ const HeygenProviderComponent = () => {
             ))}
           </Select>
 
-          <div className="text-lg mb-3">Voice to generate</div>
+          <div className="text-lg mb-3">
+            {t('voice_to_generate', 'Voice to generate')}
+          </div>
           {!hideVoiceGenerator && (
             <Button onClick={generateVoice} loading={voiceLoading}>
-              Generate Voice From My Post Text
+              {t(
+                'generate_voice_from_my_post_text',
+                'Generate Voice From My Post Text'
+              )}
             </Button>
           )}
           <Textarea label="" {...form.register('voice')} />
           {!!data?.length && (
             <>
-              <div className="text-lg my-3">Select Avatar</div>
+              <div className="text-lg my-3">
+                {t('select_avatar', 'Select Avatar')}
+              </div>
               <SelectAvatarComponent
                 avatarList={data.map((p: any) => ({
                   avatar_id: p.avatar_id || p.id,
@@ -226,7 +246,9 @@ const HeygenProviderComponent = () => {
 
           {!!voices?.length && (
             <>
-              <div className="text-lg my-3">Select Voice</div>
+              <div className="text-lg my-3">
+                {t('select_voice', 'Select Voice')}
+              </div>
               <SelectVoiceComponent
                 voiceList={voices}
                 onChange={(id: string) => form.setValue('selectedVoice', id)}
@@ -237,7 +259,7 @@ const HeygenProviderComponent = () => {
             </>
           )}
 
-          <Button type="submit">Generate Video</Button>
+          <Button type="submit">{t('generate_video', 'Generate Video')}</Button>
         </form>
       </FormProvider>
     </div>

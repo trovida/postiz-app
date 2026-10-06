@@ -17,10 +17,12 @@ import { InstagramPreview } from '@gitroom/frontend/components/new-launch/provid
 const postType = [
   {
     value: 'post',
+    key: 'label_post_type_post_reel',
     label: 'Post / Reel',
   },
   {
     value: 'story',
+    key: 'label_post_type_story',
     label: 'Story',
   },
 ];
@@ -28,10 +30,12 @@ const postType = [
 const graduationStrategies = [
   {
     value: 'MANUAL',
+    key: 'instagram_graduation_manual',
     label: 'Manual',
   },
   {
     value: 'SS_PERFORMANCE',
+    key: 'instagram_graduation_auto_performance',
     label: 'Auto (based on performance)',
   },
 ];
@@ -56,14 +60,17 @@ const InstagramCollaborators: FC<{
         <option value="">{t('select_post_type', 'Select Post Type...')}</option>
         {postType.map((item) => (
           <option key={item.value} value={item.value}>
-            {item.label}
+            {t(item.key, item.label)}
           </option>
         ))}
       </Select>
 
       {postCurrentType !== 'story' && (
         <InstagramCollaboratorsTags
-          label="Collaborators (max 3) - accounts can't be private"
+          label={t(
+            'label_collaborators',
+            "Collaborators (max 3) - accounts can't be private"
+          )}
           {...register('collaborators', {
             value: [],
           })}
@@ -89,7 +96,10 @@ const InstagramCollaborators: FC<{
             {...register('is_trial_reel', {
               value: false,
             })}
-            label={t('trial_reel', 'Trial Reel (share only to non-followers first)')}
+            label={t(
+              'trial_reel',
+              'Trial Reel (share only to non-followers first)'
+            )}
           />
 
           {isTrialReel && (
@@ -101,7 +111,7 @@ const InstagramCollaborators: FC<{
             >
               {graduationStrategies.map((item) => (
                 <option key={item.value} value={item.value}>
-                  {item.label}
+                  {t(item.key, item.label)}
                 </option>
               ))}
             </Select>
@@ -118,5 +128,5 @@ export default withProvider<InstagramDto>({
   CustomPreviewComponent: InstagramPreview,
   dto: InstagramDto,
   maximumCharacters: 2200,
-  comments: 'no-media'
+  comments: 'no-media',
 });

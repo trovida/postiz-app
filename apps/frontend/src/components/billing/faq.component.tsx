@@ -66,9 +66,8 @@ For example, you can schedule your posts on X, Facebook, Instagram, TikTok, YouT
             ),
             description: t(
               'faq_delete_account_description',
-              `If you don't want to continue using ${
-                isGeneral ? 'Postiz' : 'Gitroom'
-              }, you can delete your account, including all your organizations, channels and posts. This action cannot be undone.`
+              "If you don't want to continue using {{product}}, you can delete your account, including all your organizations, channels and posts. This action cannot be undone.",
+              { product: isGeneral ? 'Postiz' : 'Gitroom' }
             ),
             content: <DeleteAccountComponent isLink={true} />,
           },

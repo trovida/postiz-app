@@ -5,6 +5,7 @@ import { ColorPicker } from "./color-picker";
 
 import { cn } from "../lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface FillColorSidebarProps {
   editor: Editor | undefined;
@@ -17,6 +18,7 @@ export const FillColorSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: FillColorSidebarProps) => {
+  const t = useT();
   const value = editor?.getActiveFillColor() || FILL_COLOR;
 
   const onClose = () => {
@@ -35,8 +37,8 @@ export const FillColorSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Fill color"
-        description="Add fill color to your element"
+        title={t('editor_fill_color', 'Fill color')}
+        description={t('editor_fill_color_description', 'Add fill color to your element')}
       />
       <ScrollArea>
         <div className="p-4 space-y-6">

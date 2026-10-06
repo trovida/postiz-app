@@ -24,16 +24,17 @@ const resolver = classValidatorResolver(ApiKeyDto);
 export const useAddProvider = (update?: () => void, invite?: boolean) => {
   const modal = useModals();
   const fetch = useFetch();
+  const t = useT();
   return useCallback(async () => {
     const data = await (await fetch('/integrations')).json();
     modal.openModal({
-      title: 'Add Channel',
+      title: t('add_channel', 'Add Channel'),
       withCloseButton: true,
       children: (
         <AddProviderComponent invite={!!invite} update={update} {...data} />
       ),
     });
-  }, []);
+  }, [t]);
 };
 export const AddProviderButton: FC<{
   update?: () => void;
@@ -343,11 +344,10 @@ const ChromeExtensionWarning: FC<{
           )}
         </li>
         <li>
-          We will store your cookies securely to facilitate the connection.
+          {t('chrome_extension_warning_cookies', 'We will store your cookies securely to facilitate the connection.')}
         </li>
         <li>
-          Postiz does not take responsibility for any issues arising or account
-          termination due to the use of this method.
+          {t('chrome_extension_warning_responsibility', 'Postiz does not take responsibility for any issues arising or account termination due to the use of this method.')}
         </li>
       </ul>
       <div className="flex gap-[10px] mt-[8px]">
@@ -411,6 +411,7 @@ export const AddProviderComponent: FC<{
   const router = useRouter();
   const fetch = useFetch();
   const modal = useModals();
+  const t = useT();
   const getSocialLink = useCallback(
     (
         invite: boolean,
@@ -496,7 +497,10 @@ export const AddProviderComponent: FC<{
 
           if (invite) {
             toaster.show(
-              'Invite link copied to clipboard, link will be available for 1 hour',
+              t(
+                'invite_link_copied_available_1_hour',
+                'Invite link copied to clipboard, link will be available for 1 hour'
+              ),
               'success'
             );
             modal.closeAll();
@@ -668,10 +672,8 @@ export const AddProviderComponent: FC<{
         }
         await gotoIntegration();
       },
-    [onboarding]
+    [onboarding, t]
   );
-
-  const t = useT();
 
   return (
     <div className="w-full flex flex-col gap-[20px] rounded-[4px] relative]">

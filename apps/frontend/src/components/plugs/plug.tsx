@@ -84,6 +84,7 @@ export const PlugPop: FC<{
   const { closeAll } = useModals();
   const fetch = useFetch();
   const toaster = useToaster();
+  const t = useT();
   const values = useMemo(() => {
     if (!data?.data) {
       return {};
@@ -102,13 +103,13 @@ export const PlugPop: FC<{
           ...acc,
           [field.name]: field.validation
             ? string().matches(convertBackRegex(field.validation), {
-                message: 'Invalid value',
+                message: t('invalid_value', 'Invalid value'),
               })
             : null,
         };
       }, {})
     );
-  }, []);
+  }, [t]);
   const form = useForm({
     resolver: yupResolver(yupSchema),
     values,
@@ -125,11 +126,9 @@ export const PlugPop: FC<{
         })),
       }),
     });
-    toaster.show('Plug updated', 'success');
+    toaster.show(t('plug_updated', 'Plug updated'), 'success');
     closeAll();
-  }, []);
-
-  const t = useT();
+  }, [t]);
 
   return (
     <FormProvider {...form}>

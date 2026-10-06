@@ -5,6 +5,7 @@ import { ColorPicker } from "./color-picker";
 
 import { cn } from "../lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface StrokeColorSidebarProps {
   editor: Editor | undefined;
@@ -17,6 +18,7 @@ export const StrokeColorSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: StrokeColorSidebarProps) => {
+  const t = useT();
   const value = editor?.getActiveStrokeColor() || STROKE_COLOR;
 
   const onClose = () => {
@@ -35,8 +37,8 @@ export const StrokeColorSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Stroke color"
-        description="Add stroke color to your element"
+        title={t('editor_stroke_color', 'Stroke color')}
+        description={t('editor_stroke_color_description', 'Add stroke color to your element')}
       />
       <ScrollArea>
         <div className="p-4 space-y-6">

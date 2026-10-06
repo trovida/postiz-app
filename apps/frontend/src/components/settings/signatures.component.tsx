@@ -20,6 +20,7 @@ export const SignaturesComponent: FC<{
   const fetch = useFetch();
   const modal = useModals();
   const toaster = useToaster();
+  const t = useT();
   const load = useCallback(async () => {
     return (await fetch('/signatures')).json();
   }, []);
@@ -27,12 +28,14 @@ export const SignaturesComponent: FC<{
   const addSignature = useCallback(
     (data?: any) => () => {
       modal.openModal({
-        title: data ? 'Edit Signature' : 'Add Signature',
+        title: data
+          ? t('top_title_edit_signature', 'Edit Signature')
+          : t('add_signature', 'Add Signature'),
         withCloseButton: true,
         children: <AddOrRemoveSignature data={data} reload={mutate} />,
       });
     },
-    [mutate]
+    [mutate, t]
   );
 
   const deleteSignature = useCallback(
@@ -50,13 +53,14 @@ export const SignaturesComponent: FC<{
           method: 'DELETE',
         });
         mutate();
-        toaster.show('Signature deleted successfully', 'success');
+        toaster.show(
+          t('signature_deleted_successfully', 'Signature deleted successfully'),
+          'success'
+        );
       }
     },
-    []
+    [t]
   );
-
-  const t = useT();
 
   return (
     <div className="flex flex-col">
@@ -210,7 +214,7 @@ const AddOrRemoveSignature: FC<{
               onChange={(e) => {
                 form.setValue('content', e.target.value);
               }}
-              placeholder="Write your signature..."
+              placeholder={t('write_your_signature', 'Write your signature...')}
               autosuggestionsConfig={{
                 textareaPurpose: `Assist me in writing social media signature`,
                 chatApiConfigs: {},

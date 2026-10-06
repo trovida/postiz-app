@@ -9,6 +9,7 @@ import { ToolSidebarHeader } from "./tool-sidebar-header";
 import { cn } from "../lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 interface FilterSidebarProps {
   editor: Editor | undefined;
@@ -21,6 +22,7 @@ export const FilterSidebar = ({
   activeTool,
   onChangeActiveTool,
 }: FilterSidebarProps) => {
+  const t = useT();
   const onClose = () => {
     onChangeActiveTool("select");
   };
@@ -33,8 +35,8 @@ export const FilterSidebar = ({
       )}
     >
       <ToolSidebarHeader
-        title="Filters"
-        description="Apply a filter to selected image"
+        title={t('editor_filters', 'Filters')}
+        description={t('editor_filters_description', 'Apply a filter to selected image')}
       />
       <ScrollArea>
         <div className="p-4 space-y-1 border-b">

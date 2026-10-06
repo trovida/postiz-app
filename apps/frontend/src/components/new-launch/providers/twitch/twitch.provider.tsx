@@ -9,13 +9,16 @@ import { TwitchDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settin
 import { useSettings } from '@gitroom/frontend/components/launches/helpers/use.values';
 import { Select } from '@gitroom/react/form/select';
 import { useWatch } from 'react-hook-form';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 const messageTypes = [
   {
+    key: 'twitch_message_type_chat_message',
     label: 'Chat Message',
     value: 'message',
   },
   {
+    key: 'twitch_message_type_announcement',
     label: 'Announcement',
     value: 'announcement',
   },
@@ -23,22 +26,27 @@ const messageTypes = [
 
 const announcementColors = [
   {
+    key: 'twitch_color_primary_default',
     label: 'Primary (Default)',
     value: 'primary',
   },
   {
+    key: 'twitch_color_blue',
     label: 'Blue',
     value: 'blue',
   },
   {
+    key: 'twitch_color_green',
     label: 'Green',
     value: 'green',
   },
   {
+    key: 'twitch_color_orange',
     label: 'Orange',
     value: 'orange',
   },
   {
+    key: 'twitch_color_purple',
     label: 'Purple',
     value: 'purple',
   },
@@ -46,6 +54,7 @@ const announcementColors = [
 
 const TwitchSettings: FC = () => {
   const { register, control } = useSettings();
+  const t = useT();
   const messageType = useWatch({
     control,
     name: 'messageType',
@@ -59,9 +68,9 @@ const TwitchSettings: FC = () => {
           value: 'message',
         })}
       >
-        {messageTypes.map((t) => (
-          <option key={t.value} value={t.value}>
-            {t.label}
+        {messageTypes.map((mt) => (
+          <option key={mt.value} value={mt.value}>
+            {t(mt.key, mt.label)}
           </option>
         ))}
       </Select>
@@ -74,7 +83,7 @@ const TwitchSettings: FC = () => {
         >
           {announcementColors.map((c) => (
             <option key={c.value} value={c.value}>
-              {c.label}
+              {t(c.key, c.label)}
             </option>
           ))}
         </Select>

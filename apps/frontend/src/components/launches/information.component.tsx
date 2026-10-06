@@ -289,8 +289,11 @@ export const InformationComponent: FC<{
                   'mt-[12px]'
               )}
             >
-              {t('links_will_be_removed_from', 'Links will be removed from')}:{' '}
-              {stripLinkNames.join(', ')}
+              {t(
+                'links_will_be_removed_from_list',
+                'Links will be removed from: {{names}}',
+                { names: stripLinkNames.join(', ') }
+              )}
             </div>
           )}
         </div>

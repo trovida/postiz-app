@@ -268,12 +268,19 @@ export const CopyButton = ({
   label: string;
 }) => {
   const toaster = useToaster();
+  const t = useT();
   return (
     <button
       type="button"
       onClick={() => {
         copy(text);
-        toaster.show(`${label} copied to clipboard`, 'success');
+        toaster.show(
+          t('label_copied_to_clipboard', '{{label}} copied to clipboard', {
+            label,
+            interpolation: { escapeValue: false },
+          }),
+          'success'
+        );
       }}
       className="cursor-pointer px-[16px] h-[36px] bg-btnSimple hover:bg-boxHover transition-colors rounded-[8px] text-[13px] font-[600] flex items-center gap-[6px]"
     >
@@ -515,16 +522,20 @@ const McpSection = ({
   );
 };
 
+// Labels are translated at render time: `t(step.key, step.label)`.
 export const localCliSteps = [
   {
+    key: 'cli_step_install_the_cli',
     label: 'Install the CLI',
     code: 'npm install -g postiz',
   },
   {
+    key: 'cli_step_run_postiz_auth_login',
     label: 'Run: postiz auth:login',
     code: 'postiz auth:login',
   },
   {
+    key: 'cli_step_install_postiz_skill_for_ai_agent',
     label: 'Install the Postiz skill for your AI agent',
     code: 'npx skills add gitroomhq/postiz-agent',
   },
@@ -532,14 +543,17 @@ export const localCliSteps = [
 
 const ciCliSteps = [
   {
+    key: 'cli_step_install_the_cli',
     label: 'Install the CLI',
     code: 'npm install -g postiz',
   },
   {
+    key: 'cli_step_set_api_key_env_variable',
     label: 'Set your API key as an environment variable',
     code: 'export POSTIZ_API_KEY="{API_KEY}"',
   },
   {
+    key: 'cli_step_install_postiz_skill_for_ai_agent',
     label: 'Install the Postiz skill for your AI agent',
     code: 'npx skills add gitroomhq/postiz-agent',
   },
@@ -617,7 +631,7 @@ const CliSection = ({ apiKey }: { apiKey: string }) => {
         {displaySteps.map((step, i) => (
           <div key={i} className="flex flex-col gap-[6px]">
             <div className="text-[13px] font-[600] text-customColor18">
-              {i + 1}. {step.label}
+              {i + 1}. {t(step.key, step.label)}
             </div>
             <pre className="bg-newBgColorInner border border-newBorder rounded-[8px] p-[16px] text-[13px] whitespace-pre-wrap break-all overflow-x-auto leading-[1.6]">
               {step.code}

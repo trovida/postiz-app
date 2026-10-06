@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { useIntegration } from '@gitroom/frontend/components/launches/helpers/use.integration';
+import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
 import { useMediaDirectory } from '@gitroom/react/helpers/use.media.directory';
 import { stripHtmlValidation } from '@gitroom/helpers/utils/strip.html.validation';
@@ -10,6 +11,7 @@ export const YoutubePreview: FC<{
   maximumCharacters?: number;
 }> = (props) => {
   const { value: topValue, integration } = useIntegration();
+  const t = useT();
   const current = useLaunchStore((state) => state.current);
   const mediaDir = useMediaDirectory();
 
@@ -66,17 +68,19 @@ export const YoutubePreview: FC<{
           <div>
             <img
               src={integration?.picture || '/no-picture.jpg'}
-              alt="social"
+              alt={t('preview_avatar_alt', 'social')}
               className="rounded-full z-[2] w-[40px] h-[40px]"
             />
           </div>
           <div className="flex flex-col">
             <div className="text-[14px] font-[500]">{integration?.name}</div>
-            <div className="text-[10px] font-[400]">16.7M subscribers</div>
+            <div className="text-[10px] font-[400]">
+              {t('preview_youtube_subscribers_sample', '16.7M subscribers')}
+            </div>
           </div>
           <div>
             <div className="h-[32px] text-[12px] text-newBgColor font-[500] px-[14px] flex justify-center items-center bg-youtubeButton rounded-[16px]">
-              Subscribe
+              {t('preview_subscribe', 'Subscribe')}
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 {
   "files": {
-    "libraries/react-shared-libraries/src/helpers/testomonials.tsx": "attributed customer quotes — translating them would put words in real people's mouths"
+    "libraries/react-shared-libraries/src/helpers/testomonials.tsx": "attributed customer quotes — not translated (that would put words in real people's mouths); the auth layout renders them only for English visitors"
   },
   "entries": [
     {

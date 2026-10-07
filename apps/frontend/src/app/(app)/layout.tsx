@@ -22,6 +22,7 @@ import {
   fallbackLng,
   headerName,
 } from '@gitroom/react/translation/i18n.config';
+import { i18nextReady } from '@gitroom/react/translation/i18next';
 import { HtmlComponent } from '@gitroom/frontend/components/layout/html.component';
 import Script from 'next/script';
 import { ChangeDirClient } from '@gitroom/frontend/components/new-layout/change.dir.client';
@@ -33,6 +34,9 @@ const jakartaSans = Plus_Jakarta_Sans({
 });
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
+  // Client components are server-rendered from the shared i18next instance;
+  // make sure its resources are loaded before the first request renders.
+  await i18nextReady;
   const cookieStore = await cookies();
   // The middleware's per-request language (honours the ?lng= hand-off on the
   // very first visit, before the cookie exists), then the cookie.

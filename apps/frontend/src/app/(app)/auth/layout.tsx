@@ -1,4 +1,7 @@
-import { getT } from '@gitroom/react/translation/get.translation.service.backend';
+import {
+  getT,
+  requestLanguage,
+} from '@gitroom/react/translation/get.translation.service.backend';
 
 export const dynamic = 'force-dynamic';
 import { ReactNode } from 'react';
@@ -14,6 +17,10 @@ export default async function AuthLayout({
   children: ReactNode;
 }) {
   const t = await getT();
+  // The testimonials are real customers' attributed quotes, in English. They are
+  // not translated (that would put words in their mouths), so they are shown
+  // only to English visitors rather than as an English block in another UI.
+  const showTestimonials = (await requestLanguage()) === 'en';
   // Whole headline in one key so translators control word order; the styled
   // count is spliced back in at the {{amount}} position.
   const [heroBefore, heroAfter = ''] = String(
@@ -42,7 +49,7 @@ export default async function AuthLayout({
             <span className="text-[42px] text-[#FC69FF]">20,000+</span>
             {heroAfter}
           </div>
-          <TestimonialComponent />
+          {showTestimonials && <TestimonialComponent />}
         </div>
       </div>
     </MantineWrapper>

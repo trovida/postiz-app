@@ -5,7 +5,7 @@ import { cookieName, fallbackLng, headerName, languages } from './i18n.config';
 // resolvedLanguage is not the visitor's language (it is effectively always the
 // fallback). Resolve the language per request instead: the middleware puts it in
 // `headerName`; the cookie is the fallback for routes the middleware skips.
-async function requestLanguage(): Promise<string> {
+export async function requestLanguage(): Promise<string> {
   try {
     const { headers, cookies } = await import('next/headers');
     const lng =

@@ -36,7 +36,7 @@ interface VariableContextInterface {
   googleAdsTrialTracking?: string;
   recaptchaSiteKey?: string;
 }
-const VariableContext = createContext({
+export const VariableContext = createContext({
   stripeClient: '',
   billingEnabled: false,
   isGeneral: true,

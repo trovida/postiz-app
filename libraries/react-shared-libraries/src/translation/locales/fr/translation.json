@@ -1491,5 +1491,6 @@
   "sso_only_title": "Publication sociale",
   "sso_only_body": "La publication sociale fait partie de votre tableau de bord Trovida. Connectez-vous avec votre compte Trovida pour continuer.",
   "sso_only_redirecting": "Redirection vers Trovida pour vous connecter…",
-  "sso_only_back": "Retour à votre tableau de bord Trovida"
+  "sso_only_back": "Retour à votre tableau de bord Trovida",
+  "sso_only_failed": "Nous n'avons pas pu vous connecter. Ouvrez la publication sociale depuis votre tableau de bord Trovida et réessayez."
 }

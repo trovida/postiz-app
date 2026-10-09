@@ -1491,5 +1491,6 @@
   "sso_only_title": "ソーシャル投稿",
   "sso_only_body": "ソーシャル投稿はTrovidaダッシュボードの機能です。続けるにはTrovidaアカウントでログインしてください。",
   "sso_only_redirecting": "ログインのためTrovidaに移動しています…",
-  "sso_only_back": "Trovidaダッシュボードに戻る"
+  "sso_only_back": "Trovidaダッシュボードに戻る",
+  "sso_only_failed": "ログインできませんでした。Trovidaダッシュボードからソーシャル投稿を開いて、もう一度お試しください。"
 }

@@ -1491,5 +1491,6 @@
   "sso_only_title": "Publicación social",
   "sso_only_body": "La publicación social forma parte de tu panel de Trovida. Inicia sesión con tu cuenta de Trovida para continuar.",
   "sso_only_redirecting": "Te llevamos a Trovida para iniciar sesión…",
-  "sso_only_back": "Volver a tu panel de Trovida"
+  "sso_only_back": "Volver a tu panel de Trovida",
+  "sso_only_failed": "No pudimos iniciar tu sesión. Abre Publicación social desde tu panel de Trovida e inténtalo de nuevo."
 }

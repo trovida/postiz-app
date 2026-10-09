@@ -1491,5 +1491,6 @@
   "sso_only_title": "النشر على وسائل التواصل",
   "sso_only_body": "النشر على وسائل التواصل جزء من لوحة تحكم Trovida. سجّل الدخول بحساب Trovida للمتابعة.",
   "sso_only_redirecting": "جارٍ نقلك إلى Trovida لتسجيل الدخول…",
-  "sso_only_back": "العودة إلى لوحة تحكم Trovida"
+  "sso_only_back": "العودة إلى لوحة تحكم Trovida",
+  "sso_only_failed": "تعذّر تسجيل دخولك. افتح النشر على وسائل التواصل من لوحة تحكم Trovida وحاول مرة أخرى."
 }

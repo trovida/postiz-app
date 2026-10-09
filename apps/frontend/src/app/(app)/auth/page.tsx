@@ -15,12 +15,24 @@ export async function generateMetadata(): Promise<Metadata> {
     description: '',
   };
 }
-export default async function Auth(params: {searchParams: Promise<{provider: string}>}) {
+export default async function Auth(params: {
+  searchParams: Promise<{ provider?: string; code?: string; error?: string }>;
+}) {
   const t = await getT();
-  // The Trovida OIDC callback lands here with ?provider=GENERIC&code=…; only the
-  // bare sign-up form is replaced.
-  if (isSsoOnly() && !(await params?.searchParams)?.provider) {
-    return <SsoOnlyEntry trovidaUrl={process.env.TROVIDA_DASHBOARD_URL} />;
+  if (isSsoOnly()) {
+    // The Trovida OIDC callback lands here with ?provider=GENERIC&code=… and
+    // finishes in the register flow. Anything else (a direct visit, or a
+    // callback carrying ?error=…) gets the Trovida-only panel.
+    const query = await params?.searchParams;
+    if (query?.provider && query?.code) {
+      return <Register />;
+    }
+    return (
+      <SsoOnlyEntry
+        trovidaUrl={process.env.TROVIDA_DASHBOARD_URL}
+        failed={!!query?.error}
+      />
+    );
   }
   if (process.env.DISABLE_REGISTRATION === 'true') {
     const canRegister = (

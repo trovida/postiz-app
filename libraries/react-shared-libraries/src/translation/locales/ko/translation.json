@@ -1491,5 +1491,6 @@
   "sso_only_title": "소셜 게시",
   "sso_only_body": "소셜 게시는 Trovida 대시보드의 기능이에요. 계속하려면 Trovida 계정으로 로그인해 주세요.",
   "sso_only_redirecting": "로그인을 위해 Trovida로 이동하고 있어요…",
-  "sso_only_back": "Trovida 대시보드로 돌아가기"
+  "sso_only_back": "Trovida 대시보드로 돌아가기",
+  "sso_only_failed": "로그인하지 못했어요. Trovida 대시보드에서 소셜 게시를 열고 다시 시도해 주세요."
 }

@@ -1491,5 +1491,6 @@
   "sso_only_title": "Social-Media-Veröffentlichung",
   "sso_only_body": "Die Social-Media-Veröffentlichung ist Teil deines Trovida-Dashboards. Melde dich mit deinem Trovida-Konto an, um fortzufahren.",
   "sso_only_redirecting": "Du wirst zur Anmeldung zu Trovida weitergeleitet…",
-  "sso_only_back": "Zurück zu deinem Trovida-Dashboard"
+  "sso_only_back": "Zurück zu deinem Trovida-Dashboard",
+  "sso_only_failed": "Wir konnten dich nicht anmelden. Öffne die Social-Media-Veröffentlichung in deinem Trovida-Dashboard und versuche es erneut."
 }

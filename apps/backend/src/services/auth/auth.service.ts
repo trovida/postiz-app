@@ -152,28 +152,7 @@ export class AuthService {
       provider
     );
     if (user) {
-      // Trovida: re-report the org (and its API key) on every sign-in, so a
-      // key rotated in Postiz reaches Trovida, and a merchant's second store
-      // (same provider user, no new org) gets linked too.
-      if (providerInstance?.postLogin) {
-        try {
-          const orgs = await this._organizationService.getOrgsByUserId(
-            user.id
-          );
-          const org = orgs.find((o: any) =>
-            o.users?.some((u: any) => u.role === 'SUPERADMIN' && !u.disabled)
-          );
-          if (org) {
-            await providerInstance.postLogin(
-              body.providerToken,
-              org.id,
-              org.apiKey
-            );
-          }
-        } catch (err) {
-          // Don't fail login if postLogin fails
-        }
-      }
+      await this.reportLogin(providerInstance, body.providerToken, user.id);
       return user;
     }
 
@@ -347,10 +326,38 @@ export class AuthService {
       provider as Provider
     );
     if (checkExists) {
+      // The web sign-in path for a returning user ends here, never reaching
+      // loginOrRegisterProvider, so the login hook has to fire here too.
+      await this.reportLogin(providerInstance, token, checkExists.id);
       return { jwt: await this.jwt(checkExists) };
     }
 
     return { token };
+  }
+
+  // Trovida: re-report the user's org (and its API key) on every sign-in, so a
+  // key rotated in Postiz reaches Trovida, and a merchant's second store (same
+  // provider user, no new org) gets linked too. Best-effort: never fails the
+  // login.
+  private async reportLogin(
+    providerInstance: any,
+    providerToken: string,
+    userId: string
+  ) {
+    if (!providerInstance?.postLogin) {
+      return;
+    }
+    try {
+      const orgs = await this._organizationService.getOrgsByUserId(userId);
+      const org = orgs.find((o: any) =>
+        o.users?.some((u: any) => u.role === 'SUPERADMIN' && !u.disabled)
+      );
+      if (org) {
+        await providerInstance.postLogin(providerToken, org.id, org.apiKey);
+      }
+    } catch (err) {
+      // Don't fail login if postLogin fails
+    }
   }
 
   private async jwt(user: User) {

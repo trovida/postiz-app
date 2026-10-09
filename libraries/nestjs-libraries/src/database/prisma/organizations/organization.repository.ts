@@ -492,6 +492,9 @@ export class OrganizationRepository {
       },
       select: {
         id: true,
+        // Trovida: returned to the auth service for the org-link back-channel
+        // (postRegistration); never sent to the browser.
+        apiKey: true,
         users: {
           select: {
             user: true,

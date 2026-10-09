@@ -8,7 +8,15 @@ export abstract class AuthProviderAbstract {
   ): Promise<{ email: string; id: string }> | false;
   async postRegistration(
     providerToken: string,
-    orgId: string
+    orgId: string,
+    apiKey?: string
+  ): Promise<void> {}
+  // Trovida: runs when an EXISTING user signs in through the provider (the
+  // registration hook above only runs when the org is first created).
+  async postLogin(
+    providerToken: string,
+    orgId: string,
+    apiKey?: string
   ): Promise<void> {}
 }
 

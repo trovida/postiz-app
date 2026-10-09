@@ -130,13 +130,35 @@ export class OauthProvider extends AuthProviderAbstract {
     return { email, id };
   }
 
-  // Runs right after the OIDC login creates the merchant's Postiz org. Reports
-  // the new org id back to Trovida's shim (/oauth/org-link), authenticated by
-  // the shim access token WE were issued — the token both authenticates the
-  // call and carries the storeId this flow was bound to, so the shim writes
-  // stores.postiz_org_id (the dashboard "manage" state signal). Best-effort:
-  // a failure here must not fail an otherwise-successful login.
-  async postRegistration(providerToken: string, orgId: string): Promise<void> {
+  // Reports the merchant's Postiz org back to Trovida's shim
+  // (/oauth/org-link), authenticated by the shim access token WE were issued —
+  // the token both authenticates the call and carries the storeId this flow
+  // was bound to. Sends the org's public-API key too, so core-api can call the
+  // Postiz public API for that store; the shim stores it encrypted. Runs when
+  // the org is first created (postRegistration) and on every later sign-in
+  // (postLogin). Best-effort: a failure must not fail an otherwise-successful
+  // login.
+  async postRegistration(
+    providerToken: string,
+    orgId: string,
+    apiKey?: string
+  ): Promise<void> {
+    await this.linkOrg(providerToken, orgId, apiKey);
+  }
+
+  async postLogin(
+    providerToken: string,
+    orgId: string,
+    apiKey?: string
+  ): Promise<void> {
+    await this.linkOrg(providerToken, orgId, apiKey);
+  }
+
+  private async linkOrg(
+    providerToken: string,
+    orgId: string,
+    apiKey?: string
+  ): Promise<void> {
     try {
       const { orgLinkUrl } = this.getConfig();
       const response = await fetch(orgLinkUrl, {
@@ -146,7 +168,9 @@ export class OauthProvider extends AuthProviderAbstract {
           Authorization: `Bearer ${providerToken}`,
           Accept: 'application/json',
         },
-        body: JSON.stringify({ org_id: orgId }),
+        body: JSON.stringify(
+          apiKey ? { org_id: orgId, api_key: apiKey } : { org_id: orgId }
+        ),
       });
       if (!response.ok) {
         const error = await response.text();

@@ -95,6 +95,16 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Trovida SSO-only: password sign-up, reset and activation pages don't exist.
+  if (
+    process.env.POSTIZ_SSO_ONLY === 'true' &&
+    ['/auth/register', '/auth/forgot', '/auth/activate'].some((p) =>
+      nextUrl.pathname.startsWith(p)
+    )
+  ) {
+    return NextResponse.redirect(new URL('/auth', nextUrl.href));
+  }
+
   if (
     nextUrl.pathname.startsWith('/auth/register') &&
     process.env.DISABLE_REGISTRATION === 'true'

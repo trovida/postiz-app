@@ -25,7 +25,16 @@ export const OauthProvider = () => {
   }, []);
   return (
     <div
+      data-oauth-login
+      role="button"
+      tabIndex={0}
       onClick={gotoLogin}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          gotoLogin();
+        }
+      }}
       className={`cursor-pointer flex-1 bg-white h-[44px] rounded-[4px] flex justify-center items-center text-customColor16 gap-[4px]`}
     >
       <div>

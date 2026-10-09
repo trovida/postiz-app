@@ -6,6 +6,8 @@ import { isGeneralServerSide } from '@gitroom/helpers/utils/is.general.server.si
 import Link from 'next/link';
 import { getT } from '@gitroom/react/translation/get.translation.service.backend';
 import { LoginWithOidc } from '@gitroom/frontend/components/auth/login.with.oidc';
+import { SsoOnlyEntry } from '@gitroom/frontend/components/auth/sso.only.entry';
+import { isSsoOnly } from '@gitroom/helpers/utils/sso.only';
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
@@ -13,8 +15,25 @@ export async function generateMetadata(): Promise<Metadata> {
     description: '',
   };
 }
-export default async function Auth(params: {searchParams: Promise<{provider: string}>}) {
+export default async function Auth(params: {
+  searchParams: Promise<{ provider?: string; code?: string; error?: string }>;
+}) {
   const t = await getT();
+  if (isSsoOnly()) {
+    // The Trovida OIDC callback lands here with ?provider=GENERIC&code=… and
+    // finishes in the register flow. Anything else (a direct visit, or a
+    // callback carrying ?error=…) gets the Trovida-only panel.
+    const query = await params?.searchParams;
+    if (query?.provider && query?.code) {
+      return <Register />;
+    }
+    return (
+      <SsoOnlyEntry
+        trovidaUrl={process.env.TROVIDA_DASHBOARD_URL}
+        failed={!!query?.error}
+      />
+    );
+  }
   if (process.env.DISABLE_REGISTRATION === 'true') {
     const canRegister = (
       await (await internalFetch('/auth/can-register')).json()

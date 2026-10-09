@@ -1487,5 +1487,10 @@
   "page_title_register": "注册",
   "page_title_login": "登录",
   "page_title_admin_errors": "错误（管理）",
-  "page_title_lifetime_deal": "终身方案"
+  "page_title_lifetime_deal": "终身方案",
+  "sso_only_title": "社交发布",
+  "sso_only_body": "社交发布是您的Trovida控制台的一部分。请使用您的Trovida账户登录以继续。",
+  "sso_only_redirecting": "正在前往Trovida登录…",
+  "sso_only_back": "返回您的Trovida控制台",
+  "sso_only_failed": "无法为您登录。请从您的Trovida控制台打开社交发布，然后重试。"
 }

@@ -1487,5 +1487,10 @@
   "page_title_register": "Registrati",
   "page_title_login": "Accedi",
   "page_title_admin_errors": "Errori (amministrazione)",
-  "page_title_lifetime_deal": "Offerta a vita"
+  "page_title_lifetime_deal": "Offerta a vita",
+  "sso_only_title": "Pubblicazione social",
+  "sso_only_body": "La pubblicazione social fa parte della tua dashboard Trovida. Accedi con il tuo account Trovida per continuare.",
+  "sso_only_redirecting": "Ti stiamo portando su Trovida per l'accesso…",
+  "sso_only_back": "Torna alla tua dashboard Trovida",
+  "sso_only_failed": "Non siamo riusciti a farti accedere. Apri la pubblicazione social dalla tua dashboard Trovida e riprova."
 }

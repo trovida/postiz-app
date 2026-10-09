@@ -152,6 +152,28 @@ export class AuthService {
       provider
     );
     if (user) {
+      // Trovida: re-report the org (and its API key) on every sign-in, so a
+      // key rotated in Postiz reaches Trovida, and a merchant's second store
+      // (same provider user, no new org) gets linked too.
+      if (providerInstance?.postLogin) {
+        try {
+          const orgs = await this._organizationService.getOrgsByUserId(
+            user.id
+          );
+          const org = orgs.find((o: any) =>
+            o.users?.some((u: any) => u.role === 'SUPERADMIN' && !u.disabled)
+          );
+          if (org) {
+            await providerInstance.postLogin(
+              body.providerToken,
+              org.id,
+              org.apiKey
+            );
+          }
+        } catch (err) {
+          // Don't fail login if postLogin fails
+        }
+      }
       return user;
     }
 
@@ -180,7 +202,11 @@ export class AuthService {
 
     try {
       if (providerInstance?.postRegistration) {
-        await providerInstance.postRegistration(body.providerToken, create.id);
+        await providerInstance.postRegistration(
+          body.providerToken,
+          create.id,
+          create.apiKey
+        );
       }
     } catch (err) {
       // Don't fail registration if postRegistration fails

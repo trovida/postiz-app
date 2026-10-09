@@ -172,6 +172,9 @@ export class PostsRepository {
         releaseURL: true,
         releaseId: true,
         state: true,
+        // Trovida: the publish failure reason, so API callers can say why a
+        // post failed (PHOTO_SOCIAL_SHARE_PLAN §2.6).
+        error: true,
         intervalInDays: true,
         group: true,
         creationMethod: true,

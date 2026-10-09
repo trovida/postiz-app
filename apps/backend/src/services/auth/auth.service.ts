@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Provider, User } from '@prisma/client';
 import { CreateOrgUserDto } from '@gitroom/nestjs-libraries/dtos/auth/create.org.user.dto';
 import { LoginUserDto } from '@gitroom/nestjs-libraries/dtos/auth/login.user.dto';
@@ -11,6 +11,11 @@ import { NotificationService } from '@gitroom/nestjs-libraries/database/prisma/n
 import { ForgotReturnPasswordDto } from '@gitroom/nestjs-libraries/dtos/auth/forgot-return.password.dto';
 import { EmailService } from '@gitroom/nestjs-libraries/services/email.service';
 import { NewsletterService } from '@gitroom/nestjs-libraries/newsletter/newsletter.service';
+import {
+  isAllowedSsoProvider,
+  isSsoOnly,
+  SSO_ONLY_ERROR,
+} from '@gitroom/helpers/utils/sso.only';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +27,9 @@ export class AuthService {
     private _providerManager: AuthProviderManager
   ) {}
   async canRegister(provider: string) {
+    if (isSsoOnly()) {
+      return isAllowedSsoProvider(provider);
+    }
     if (
       process.env.DISABLE_REGISTRATION !== 'true' ||
       provider === Provider.GENERIC
@@ -39,6 +47,9 @@ export class AuthService {
     userAgent: string,
     addToOrg?: boolean | { orgId: string; role: 'USER' | 'ADMIN'; id: string }
   ) {
+    if (!isAllowedSsoProvider(provider)) {
+      throw new Error(SSO_ONLY_ERROR);
+    }
     if (provider === Provider.LOCAL) {
       if (process.env.DISALLOW_PLUS && body.email.includes('+')) {
         throw new Error('Email with plus sign is not allowed');
@@ -220,6 +231,9 @@ export class AuthService {
   }
 
   async forgot(email: string) {
+    if (isSsoOnly()) {
+      return false;
+    }
     const user = await this._userService.getUserByEmail(email);
     if (!user || user.providerName !== Provider.LOCAL) {
       return false;
@@ -238,6 +252,9 @@ export class AuthService {
   }
 
   forgotReturn(body: ForgotReturnPasswordDto) {
+    if (isSsoOnly()) {
+      return false;
+    }
     const user = AuthChecker.verifyJWT(body.token) as {
       id: string;
       expires: string;
@@ -250,6 +267,9 @@ export class AuthService {
   }
 
   async activate(code: string, tracking: string) {
+    if (isSsoOnly()) {
+      return false;
+    }
     const user = AuthChecker.verifyJWT(code) as {
       id: string;
       activated: boolean;
@@ -271,6 +291,9 @@ export class AuthService {
   }
 
   async resendActivationEmail(email: string) {
+    if (isSsoOnly()) {
+      throw new Error(SSO_ONLY_ERROR);
+    }
     const user = await this._userService.getUserByEmail(email);
 
     if (!user) {
@@ -294,6 +317,9 @@ export class AuthService {
   }
 
   oauthLink(provider: string, query?: any) {
+    if (!isAllowedSsoProvider(provider)) {
+      throw new BadRequestException(SSO_ONLY_ERROR);
+    }
     const providerInstance = this._providerManager.getProvider(provider);
     return providerInstance.generateLink(query);
   }
@@ -305,6 +331,9 @@ export class AuthService {
     state?: string,
     stateCookie?: string
   ) {
+    if (!isAllowedSsoProvider(provider)) {
+      throw new BadRequestException(SSO_ONLY_ERROR);
+    }
     // the mobile app passes redirect_uri and keeps no cookies, the web flow
     // never passes it, so the state nonce is only enforced for the web flow
     if (

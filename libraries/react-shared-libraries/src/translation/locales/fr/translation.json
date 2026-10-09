@@ -1487,5 +1487,9 @@
   "page_title_register": "S'inscrire",
   "page_title_login": "Connexion",
   "page_title_admin_errors": "Erreurs (administration)",
-  "page_title_lifetime_deal": "Offre à vie"
+  "page_title_lifetime_deal": "Offre à vie",
+  "sso_only_title": "Publication sociale",
+  "sso_only_body": "La publication sociale fait partie de votre tableau de bord Trovida. Connectez-vous avec votre compte Trovida pour continuer.",
+  "sso_only_redirecting": "Redirection vers Trovida pour vous connecter…",
+  "sso_only_back": "Retour à votre tableau de bord Trovida"
 }

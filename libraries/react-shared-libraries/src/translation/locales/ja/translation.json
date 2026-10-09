@@ -1487,5 +1487,9 @@
   "page_title_register": "新規登録",
   "page_title_login": "ログイン",
   "page_title_admin_errors": "エラー（管理）",
-  "page_title_lifetime_deal": "買い切りプラン"
+  "page_title_lifetime_deal": "買い切りプラン",
+  "sso_only_title": "ソーシャル投稿",
+  "sso_only_body": "ソーシャル投稿はTrovidaダッシュボードの機能です。続けるにはTrovidaアカウントでログインしてください。",
+  "sso_only_redirecting": "ログインのためTrovidaに移動しています…",
+  "sso_only_back": "Trovidaダッシュボードに戻る"
 }

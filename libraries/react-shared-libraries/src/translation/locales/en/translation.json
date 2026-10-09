@@ -1492,5 +1492,9 @@
   "page_title_register": "Register",
   "page_title_login": "Login",
   "page_title_admin_errors": "Admin Errors",
-  "page_title_lifetime_deal": "Lifetime deal"
+  "page_title_lifetime_deal": "Lifetime deal",
+  "sso_only_title": "Social publishing",
+  "sso_only_body": "Social publishing is part of your Trovida dashboard. Sign in with your Trovida account to continue.",
+  "sso_only_redirecting": "Taking you to Trovida to sign in…",
+  "sso_only_back": "Back to your Trovida dashboard"
 }

@@ -1487,5 +1487,9 @@
   "page_title_register": "Registrieren",
   "page_title_login": "Anmelden",
   "page_title_admin_errors": "Fehler (Admin)",
-  "page_title_lifetime_deal": "Lifetime-Deal"
+  "page_title_lifetime_deal": "Lifetime-Deal",
+  "sso_only_title": "Social-Media-Veröffentlichung",
+  "sso_only_body": "Die Social-Media-Veröffentlichung ist Teil deines Trovida-Dashboards. Melde dich mit deinem Trovida-Konto an, um fortzufahren.",
+  "sso_only_redirecting": "Du wirst zur Anmeldung zu Trovida weitergeleitet…",
+  "sso_only_back": "Zurück zu deinem Trovida-Dashboard"
 }
